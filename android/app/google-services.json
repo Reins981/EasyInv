@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "845357889622",
+    "project_id": "inventorycontrol-d1645",
+    "storage_bucket": "inventorycontrol-d1645.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:845357889622:android:3f78b975046eb95bb9e3f7",
+        "android_client_info": {
+          "package_name": "mx.com.easy_inv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBulRQ3vrKZonRnsPZo-9IX4Peg3uc2IUY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
