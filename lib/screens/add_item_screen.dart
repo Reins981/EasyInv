@@ -317,11 +317,17 @@ class _AddItemScreenState extends State<AddItemScreen> {
             borderSide: BorderSide.none, // No border for error when focused
             borderRadius: BorderRadius.circular(30.0),
           ),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: () {
-              controller.clear();
-            },
+          suffixIcon: Ink(
+            decoration: const ShapeDecoration(
+              color: AppColors.pink, // Customize the ink color to pink
+              shape: CircleBorder(),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.clear, color: Colors.pink), // Set the icon color to white
+              onPressed: () {
+                controller.clear();
+              },
+            ),
           ),
         ),
         validator: (value) {
