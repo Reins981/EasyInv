@@ -317,6 +317,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
             borderSide: BorderSide.none, // No border for error when focused
             borderRadius: BorderRadius.circular(30.0),
           ),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              controller.clear();
+            },
+          ),
         ),
         validator: (value) {
           if (value?.isEmpty ?? true) {
@@ -415,6 +421,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
 
   Future<void> _addItem() async {
+    final ScaffoldMessengerState scaffoldMessenger = ScaffoldMessenger.of(context);
     if (_formKey.currentState?.validate() ?? false) {
       if (anyControllerEmpty([
         _nameController,
@@ -424,7 +431,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         _sellingController,
         _quantityController,
       ])) {
-        helper.showSnackBar('Please fill all fields!', "Error", ScaffoldMessenger.of(context));
+        helper.showSnackBar('Please fill all fields!', "Error", scaffoldMessenger);
         return;
       }
       final newItem = Item(
@@ -437,6 +444,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
         buyingPrice: double.parse(_buyingController.text.trim()),
         sellingPrice: double.parse(_sellingController.text.trim()),
         quantity: int.parse(_quantityController.text.trim()),
+        sellingQuantity: 0,
+        profit: 0,
       );
       // Check if a product with identical field values (except for quantity) already exists
       final Map<String, dynamic> result = await firestoreService.getItemByFields(newItem);
@@ -460,7 +469,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         } else {
           if (mounted) {
             helper.showSnackBar('Quantity successfully updated to ${existingProduct.quantity}!', "Success",
-                ScaffoldMessenger.of(context), duration: 2);
+                scaffoldMessenger, duration: 2);
           }
         }
       } else {
@@ -474,12 +483,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
         } else {
           if (mounted) {
             helper.showSnackBar('Item added successfully!', "Success",
-                ScaffoldMessenger.of(context), duration: 2);
+                scaffoldMessenger, duration: 2);
           }
         }
       }
     } else {
-      helper.showSnackBar('Please fill all fields!', "Error", ScaffoldMessenger.of(context));
+      helper.showSnackBar('Please fill all fields!', "Error", scaffoldMessenger);
     }
   }
 
