@@ -7,33 +7,12 @@ import '../models/item.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Item>> getAllItems() async {
-    // Retrieve all items from Firestore
-    QuerySnapshot querySnapshot = await _firestore.collection('items').get();
-    return querySnapshot.docs
-        .map((doc) {
-      Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+  Stream<List<Item>> getAllItems() {
+    // Method to get a stream of all items from Firestore
+    return _firestore.collection('items').snapshots().map((snapshot) => snapshot.docs
+        .map((doc) => Item.fromFirestore(doc.data(), doc))
+        .toList());
 
-      if (data != null) {
-        return Item(
-          id: doc.id,
-          name: data['name'],
-          category: data['category'],
-          color: data['color'],
-          size: data.containsKey('size') && data['size'] != null ? data['size'] : null,
-          vendor: data['vendor'],
-          description: data['description'],
-          buyingPrice: data['buyingPrice'],
-          sellingPrice: data['sellingPrice'],
-          quantity: data['quantity'],
-        );
-      } else {
-        // Return an empty list to ignore this document
-        return [];
-      }
-    })
-        .whereType<Item>() // Filter out null values
-        .toList();
   }
 
   Future<Map<String, String>> updateItem(Item item, String itemId) async {
@@ -77,6 +56,27 @@ class FirestoreService {
       'message': ""
     };
   }
+
+  Future<Map<String, String>> deleteItem(String itemId) async {
+    String errorMessage = "";
+    bool isError = false;
+
+    try {
+      await FirebaseFirestore.instance.collection('items').doc(itemId).delete();
+    } catch (e) {
+      errorMessage = '$e';
+      isError = true;
+    }
+
+    return isError ? {
+      'status': 'Error',
+      'message': errorMessage
+    } : {
+      'status': 'Success',
+      'message': ""
+    };
+  }
+
 
   Future<Map<String, dynamic>> getItemByFields(Item newItem) async {
     try {
@@ -139,85 +139,46 @@ class FirestoreService {
     }
   }
 
-  Future<List<String>> getItemNamesByCategory(String category) async {
+  Future<Map<String, List<dynamic>>> getItemDataByCategory(String category) async {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('items')
           .where('category', isEqualTo: category)
           .get();
 
-      return querySnapshot.docs.map((doc) => doc['name'] as String).toList();
+      List<String> names = [];
+      List<String> descriptions = [];
+      List<String> vendors = [];
+      List<double> buyingPrices = [];
+      List<double> sellingPrices = [];
+      List<int> quantities = [];
+
+      querySnapshot.docs.forEach((doc) {
+        names.add(doc['name'] as String);
+        descriptions.add(doc['description'] as String);
+        vendors.add(doc['vendor'] as String);
+        buyingPrices.add((doc['buyingPrice'] as num).toDouble());
+        sellingPrices.add((doc['sellingPrice'] as num).toDouble());
+        quantities.add((doc['quantity'] as num).toInt());
+      });
+
+      return {
+        'names': names,
+        'descriptions': descriptions,
+        'vendors': vendors,
+        'buyingPrices': buyingPrices,
+        'sellingPrices': sellingPrices,
+        'quantities': quantities,
+      };
     } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<String>> getItemDescriptionsByCategory(String category) async {
-    try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('items')
-          .where('category', isEqualTo: category)
-          .get();
-
-      return querySnapshot.docs.map((doc) => doc['description'] as String).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<String>> getItemVendorByCategory(String category) async {
-    try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('items')
-          .where('category', isEqualTo: category)
-          .get();
-
-      return querySnapshot.docs.map((doc) => doc['vendor'] as String).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<double>> getItemBuyingPriceByCategory(String category) async {
-    try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('items')
-          .where('category', isEqualTo: category)
-          .get();
-
-      return querySnapshot.docs
-          .map((doc) => (doc['buyingPrice'] as num).toDouble())
-          .toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<double>> getItemSellingPriceByCategory(String category) async {
-    try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('items')
-          .where('category', isEqualTo: category)
-          .get();
-
-      return querySnapshot.docs
-          .map((doc) => (doc['sellingPrice'] as num).toDouble()).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<int>> getItemQuantityByCategory(String category) async {
-    try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('items')
-          .where('category', isEqualTo: category)
-          .get();
-
-      return querySnapshot.docs
-          .map((doc) => (doc['quantity'] as num).toInt()).toList();
-    } catch (e) {
-      return [];
+      return {
+        'names': [],
+        'descriptions': [],
+        'vendors': [],
+        'buyingPrices': [],
+        'sellingPrices': [],
+        'quantities': [],
+      };
     }
   }
 

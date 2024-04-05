@@ -80,6 +80,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     'skyBlue',
   ];
 
+  Map<String, List<dynamic>> itemData = {};
   List<String> itemNames = []; // List to store item names for suggestions
   List<String> itemDescriptions = []; // List to store item descriptions for suggestions
   List<String> itemVendor = []; // List to store item vendor for suggestions
@@ -97,17 +98,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
   Future<void> _fetchItemSuggestions() async {
     // Fetch item names and descriptions based on selected category
     print("Fetching suggestions for $_selectedCategory...");
-    itemNames = await firestoreService.getItemNamesByCategory(_selectedCategory);
+    itemData = await firestoreService.getItemDataByCategory(_selectedCategory);
+    itemNames = itemData['names'] as List<String>;
     itemNames = itemNames.toSet().toList(); // Remove duplicates
-    itemDescriptions = await firestoreService.getItemDescriptionsByCategory(_selectedCategory);
+    itemDescriptions = itemData['descriptions'] as List<String>;
     itemDescriptions = itemDescriptions.toSet().toList(); // Remove duplicates
-    itemVendor = await firestoreService.getItemVendorByCategory(_selectedCategory);
+    itemVendor = itemData['vendors'] as List<String>;
     itemVendor = itemVendor.toSet().toList(); // Remove duplicates
-    itemBuyingPrice = await firestoreService.getItemBuyingPriceByCategory(_selectedCategory);
+    itemBuyingPrice = itemData['buyingPrices'] as List<double>;
     itemBuyingPrice = itemBuyingPrice.toSet().toList(); // Remove duplicates
-    itemSellingPrice = await firestoreService.getItemSellingPriceByCategory(_selectedCategory);
+    itemSellingPrice = itemData['sellingPrices'] as List<double>;
     itemSellingPrice = itemSellingPrice.toSet().toList(); // Remove duplicates
-    itemQuantity = await firestoreService.getItemQuantityByCategory(_selectedCategory);
+    itemQuantity = itemData['quantities'] as List<int>;
     itemQuantity = itemQuantity.toSet().toList(); // Remove duplicates
     enterYourOwnSelected = false;
     print("itemSuggestions: $itemNames, $itemDescriptions, $itemVendor, $itemBuyingPrice, $itemSellingPrice, $itemQuantity");

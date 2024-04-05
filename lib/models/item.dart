@@ -1,4 +1,6 @@
 // lib/models/item.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Item {
   String? id;
   String name;
@@ -37,6 +39,21 @@ class Item {
       'sellingPrice': sellingPrice,
       'quantity': quantity,
     };
+  }
+
+  static Item fromFirestore(Map<String, dynamic> data, QueryDocumentSnapshot doc) {
+    return Item(
+      id: doc.id,
+      name: data['name'],
+      category: data['category'],
+      size: data['size'],
+      color: data['color'],
+      vendor: data['vendor'],
+      description: data['description'],
+      buyingPrice: data['buyingPrice'],
+      sellingPrice: data['sellingPrice'],
+      quantity: data['quantity'],
+    );
   }
 
 }
