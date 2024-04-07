@@ -77,7 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 20),
                     _buildStatCard('Total Categories', totalCategories),
                     const SizedBox(height: 20),
-                    _buildLowStockItemsCard(lowStockItems),
+                    lowStockItems.isNotEmpty ? _buildLowStockItemsCard(lowStockItems) : Container(),
                     const SizedBox(height: 20),
                     _buildInventoryChart(snapshot.data!, chartHeight),
                     const SizedBox(height: 20),
@@ -433,6 +433,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: charts.BarChart(
               data,
               animate: true,
+              animationDuration: const Duration(milliseconds: 1500),
               vertical: false, // Set vertical to false for horizontal orientation
               barRendererDecorator: charts.BarLabelDecorator<String>(),
               domainAxis: const charts.OrdinalAxisSpec(
