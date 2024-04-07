@@ -63,6 +63,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final totalItems = snapshot.data!.length;
               final totalCategories = snapshot.data!.map((item) => item.category).toSet().length;
               final lowStockItems = snapshot.data!.where((item) => item.quantity < 5).toList();
+              double totalProfit = snapshot.data!.fold(0, (total, item) => total + item.profit);
+              double chartHeight = calculateChartHeight(snapshot.data!);
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -70,13 +72,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildTotalProfitWidget(totalProfit),
                     _buildStatCard('Total Items', totalItems),
                     const SizedBox(height: 20),
                     _buildStatCard('Total Categories', totalCategories),
                     const SizedBox(height: 20),
                     _buildLowStockItemsCard(lowStockItems),
                     const SizedBox(height: 20),
-                    _buildInventoryChart(snapshot.data!),
+                    _buildInventoryChart(snapshot.data!, chartHeight),
                     const SizedBox(height: 20),
                     _buildAddItemButton(context),
                   ],
@@ -133,6 +136,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildTotalProfitWidget(double totalProfit) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.0), // Adjust margin as needed
+      padding: EdgeInsets.all(8.0), // Add padding to give space around the text
+      decoration: BoxDecoration(
+        color: AppColors.rosa, // Background color of the rectangle
+        borderRadius: BorderRadius.circular(12.0), // Rounded corners
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$totalProfit', // Total profit formatted as currency with $ sign
+            style: const TextStyle(
+              fontSize: 30.0, // Customize font size
+              fontWeight: FontWeight.bold, // Add bold font weight
+              color: Colors.white, // Text color
+              fontFamily: 'Roboto', // Customize font family if needed
+              letterSpacing: 1.0, // Add letter spacing
+            ),
+          ),
+          const Icon(
+            Icons.attach_money, // Dollar sign icon
+            color: Colors.white, // Icon color
+            size: 30.0, // Customize size
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatCard(String title, int value) {
     return Card(
       elevation: 4.0,
@@ -181,6 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SizedBox(
               height: 200.0, // Set a fixed height for the scrollable area
               child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
                 child: Column(
                   children: lowStockItems.map((item) {
                     return _buildLowStockItemCard(item);
@@ -362,27 +397,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInventoryChart(List<Item> items) {
+  double calculateChartHeight(List<Item> items) {
+    // Adjust this multiplier based on your preference
+    double itemHeight = 60.0;
+    int itemCount = items.length;
+    // Calculate the total height based on the number of items
+    double totalHeight = itemCount * itemHeight;
+    // Add extra padding or spacing as needed
+    double paddingHeight = 100.0;
+    // Return the total height plus padding
+    return totalHeight + paddingHeight;
+  }
+
+  Widget _buildInventoryChart(List<Item> items, double chartHeight) {
+    items.sort((a, b) => a.vendor.compareTo(b.vendor));
     final data = [
       charts.Series<Item, String>(
         id: 'Inventory',
-        domainFn: (Item item, _) => item.name,
+        domainFn: (Item item, _) => _buildDomainText(item),
         measureFn: (Item item, _) => item.quantity,
         data: items,
         colorFn: (_, __) => charts.ColorUtil.fromDartColor(AppColors.pink),
       ),
     ];
 
-    return SizedBox(
-      height: 300,
-      child: charts.BarChart(
-        data,
-        animate: true,
-        vertical: false,
-        barRendererDecorator: charts.BarLabelDecorator<String>(),
-        domainAxis: const charts.OrdinalAxisSpec(renderSpec: charts.SmallTickRendererSpec(labelRotation: 60)),
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical, // Set vertical scrolling
+          child: SizedBox(
+            height: chartHeight,
+            child: charts.BarChart(
+              data,
+              animate: true,
+              vertical: false, // Set vertical to false for horizontal orientation
+              barRendererDecorator: charts.BarLabelDecorator<String>(),
+              domainAxis: const charts.OrdinalAxisSpec(
+                  renderSpec: charts.NoneRenderSpec()),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  String _buildDomainText(Item item) {
+    return '${_buildVendorText(item.vendor)} '
+        '- ${item.name.length > 20 ? "${item.name.substring(0, 20)}...": item.name} '
+        '- ${item.description.length > 20 ? "${item.description.substring(0, 20)}...": item.description} '
+        '- ${item.color} '
+        '- ${item.size ?? "N/A"} '
+        '- (${item.quantity})';
+  }
+
+  String _buildVendorText(String vendor) {
+    return vendor.length > 20 ? '${vendor.substring(0, 20)}...' : vendor;
   }
 
   Widget _buildAddItemButton(BuildContext context) {

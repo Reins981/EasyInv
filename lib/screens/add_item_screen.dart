@@ -92,7 +92,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
   void initState() {
     super.initState();
     // Fetch item names and descriptions for suggestions
-    _fetchItemSuggestions();
+    _fetchItemSuggestions().then((_) {
+      setState(() {});
+    });
   }
 
   Future<void> _fetchItemSuggestions() async {
@@ -397,7 +399,13 @@ class _AddItemScreenState extends State<AddItemScreen> {
             ...suggestions.map((dynamic suggestion) {
               return DropdownMenuItem<String>(
                 value: suggestion.toString(),
-                child: Text(suggestion.toString()),
+                child: SizedBox( // Wrap the child in a SizedBox to set a maximum width
+                  width: 200, // Adjust width as needed
+                  child: Text( // Limit the text length to avoid overflow
+                    suggestion.toString().length > 20 ? "${suggestion.toString().substring(0, 20)}..." : suggestion.toString(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               );
             }),
             const DropdownMenuItem<String>(
