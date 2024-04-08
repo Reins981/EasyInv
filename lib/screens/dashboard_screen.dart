@@ -6,6 +6,7 @@ import '../utils/colors.dart';
 import '../utils/helpers.dart';
 import '../widgets/dashboard_search.dart';
 import 'add_item_screen.dart';
+import '../screens/asset_management_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -179,8 +180,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   Widget _buildTotalProfitWidget(BuildContext context, double totalProfit) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.0),
-      padding: EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Colors.purpleAccent, Colors.pink],
@@ -240,7 +241,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   Widget _buildInventoryButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        // Handle inventory button tap
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AssetManagementScreen()),
+        );
       },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.purpleAccent, backgroundColor: Colors.white, shape: CircleBorder(),

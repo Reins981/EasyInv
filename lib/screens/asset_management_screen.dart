@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../models/item.dart';
+import '../services/firestore_service.dart';
 
 class AssetManagementScreen extends StatefulWidget {
   const AssetManagementScreen({Key? key}) : super(key: key);
@@ -8,27 +11,70 @@ class AssetManagementScreen extends StatefulWidget {
 }
 
 class _AssetManagementScreenState extends State<AssetManagementScreen> {
+  final FirestoreService firestoreService = FirestoreService();
   TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Asset Management'),
+        title: const Text('Asset Management'),
         centerTitle: true,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildSearchBar(),
-          const SizedBox(height: 20),
-          _buildSortingColumns(),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _buildItemList(),
-          ),
-        ],
+      body: StreamBuilder<List<Item>>(
+        stream: firestoreService.getAllItems(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString()));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'No items in inventory.',
+                    style: TextStyle(fontSize: 18.0),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final items = snapshot.data!;
+          items.sort((a, b) {
+            // First, compare by vendor
+            int vendorComparison = a.vendor.compareTo(b.vendor);
+            if (vendorComparison != 0) {
+              return vendorComparison;
+            }
+
+            // If vendors are equal, compare by category
+            return a.category.compareTo(b.category);
+          });
+          return Column(
+            children: [
+              _buildSearchBar(),
+              _buildSortingColumns(),
+              Expanded(
+                child: _buildItemList(items),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -78,7 +124,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         ),
         child: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -86,18 +132,82 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     );
   }
 
-  Widget _buildItemList() {
+  Widget _buildItemList(List<Item> items) {
     // Implement the list of items based on the search query and sorting criteria
     // This can be a ListView.builder or a custom widget depending on your data source
     return ListView.builder(
-      itemCount: 10, // Replace with the actual item count
+      itemCount: items.length, // Replace with the actual item count
       itemBuilder: (context, index) {
         // Build each item widget here
         return ListTile(
-          leading: Icon(Icons.shopping_bag),
-          title: Text('Item $index'),
-          subtitle: Text('Description of Item $index'),
-          trailing: Text('\$10'), // Example price
+          leading: const Icon(Icons.shopping_bag),
+          title: Text(items[index].name),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                items[index].vendor,
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                items[index].description,
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                items[index].size ?? 'N/A',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                items[index].color,
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              // Add more subtitles as needed
+            ],
+          ),
+          trailing: Container(
+            decoration: BoxDecoration(
+              color: Colors.green,
+              border: Border.all(
+                color: Colors.green,
+                // Border color
+                width: 1.0, // Border width
+              ),
+              borderRadius: BorderRadius.circular(
+                  4.0
+              ), // Border radius
+            ),
+            child: Padding(
+              padding: const EdgeInsets
+                  .all(
+                  4.0),
+              // Add padding inside the box
+              child: Text(
+                '\$${items[index].sellingPrice}',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
