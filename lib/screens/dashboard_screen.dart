@@ -4,8 +4,8 @@ import '../models/item.dart';
 import '../services/firestore_service.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
+import '../widgets/dashboard_search.dart';
 import 'add_item_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -20,6 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   late final AnimationController _animationController;
   late Animation<double> _animation;
   Helper helper = Helper();
+  List<Item> lowStockItems = [];
 
   @override
   void initState() {
@@ -80,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               // Calculate inventory statistics
               final totalItems = snapshot.data!.length;
               final totalCategories = snapshot.data!.map((item) => item.category).toSet().length;
-              final lowStockItems = snapshot.data!.where((item) => item.quantity < 5).toList();
+              lowStockItems = snapshot.data!.where((item) => item.quantity < 5).toList();
               double totalProfit = snapshot.data!.fold(0, (total, item) => total + item.profit);
               double chartHeight = calculateChartHeight(snapshot.data!);
 
@@ -115,7 +116,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         ),
                       ],
                     ),
-                    lowStockItems.isNotEmpty ? _buildLowStockItemsCard(lowStockItems) : Container(),
+                    LowStockItemWidget(
+                        items: lowStockItems
+                    ),
                     const SizedBox(height: 20),
                     _buildInventoryChart(snapshot.data!, chartHeight),
                     const SizedBox(height: 20),
@@ -208,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               ),
               const SizedBox(width: 8.0),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '\$$totalProfit',
@@ -284,211 +287,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildLowStockItemsCard(List<Item> lowStockItems) {
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      color: AppColors.pink,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Low Stock Items',
-              style: GoogleFonts.lato(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 12.0),
-            SizedBox(
-              height: 200.0, // Set a fixed height for the scrollable area
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: lowStockItems.map((item) {
-                    return _buildLowStockItemCard(item);
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLowStockItemCard(Item item) {
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              backgroundColor: AppColors.rosa,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              content: Text(
-                item.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.white,
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.pink,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      child: Card(
-        elevation: 5.0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        color: AppColors.pink,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Stack(
-            children: [
-              ListTile(
-                title: Text(
-                  item.name.length > 20 ? '${item.name.substring(0, 20)}...' : item.name,
-                  style: GoogleFonts.lato(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDescriptionText('Vendor:', item.vendor),
-                    _buildDescriptionText('Description:', item.description),
-                    _buildDescriptionText('Color:', item.color),
-                    _buildDescriptionText('Size:', item.size ?? 'N/A'),
-                    // Add more fields as needed
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: _buildCircle(item.quantity.toString()),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Row(
-                  children: [
-                    _buildUpdateItemButton(context, item),
-                    const SizedBox(width: 4.0), // Add some space between the buttons
-                    _buildDeleteItemButton(context, item),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildUpdateItemButton(BuildContext context, Item item) {
-    return Container(
-      width: 30, // Diameter of the circle
-      height: 30, // Diameter of the circle
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.rosa, // Color of the circle
-      ),
-      child: Center(
-        child: IconButton(
-          padding: EdgeInsets.zero, // Remove padding
-          icon: Icon(Icons.add),
-          color: Colors.black,
-          onPressed: () {
-            helper.handleItemUpdateQuantityWithDialog(context, item, firestoreService);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteItemButton(BuildContext context, Item item) {
-    return IconButton(
-      padding: EdgeInsets.zero,
-      icon: Icon(Icons.delete),
-      color: Colors.black,
-      onPressed: () {
-        helper.handleItemDeleteWithDialog(context, item, _deleteItem);
-      },
-    );
-  }
-
-  Widget _buildCircle(String quantity) {
-    return Container(
-      width: 30, // Diameter of the circle
-      height: 30, // Diameter of the circle
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.rosa, // Color of the circle
-      ),
-      child: Center(
-        child: Text(
-          quantity,
-          style: const TextStyle(
-            color: Colors.white, // Color of the text inside the circle
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDescriptionText(String label, String value) {
-    return Container(
-      decoration: BoxDecoration(
-        color: label == 'Vendor:' ? AppColors.rosa : AppColors.pink,
-        borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: label == 'Vendor:' ? AppColors.rosa : AppColors.rosa,
-            width: 0.5, // Border width
-          )
-      ),
-      padding: const EdgeInsets.all(8.0),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8.0),
-        child: Text(
-          '$label $value',
-          style: GoogleFonts.lato(
-            fontSize: 14,
-            color: label == 'Vendor:' ? Colors.black : Colors.white,
-            fontStyle: FontStyle.italic,
-            letterSpacing: 1.0,
-          ),
-        ),
       ),
     );
   }
@@ -591,22 +389,5 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ),
       ),
     );
-  }
-
-  void _deleteItem(BuildContext context, Item item) async {
-    Map<String, String> result = await firestoreService.deleteItem(item.id!);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    if (result['status'] == 'Error') {
-      if (mounted) {
-        helper.showDialogBox(
-            context, "Deleting Item failed!", result['message']!);
-      }
-    } else {
-      if (scaffoldMessenger.mounted) {
-        helper.showSnackBar('Item deleted successfully!', "Success",
-            scaffoldMessenger, duration: 2);
-      }
-    }
   }
 }
