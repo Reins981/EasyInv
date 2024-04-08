@@ -38,6 +38,7 @@ dependencies:
   google_fonts: ^4.0.4
   google_ml_kit: ^0.16.3
   image_picker: ^1.0.7
+  syncfusion_flutter_charts: ^19.4.56
 
 
   # The following adds the Cupertino Icons font to your application.

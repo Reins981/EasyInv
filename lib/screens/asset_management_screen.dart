@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/item.dart';
 import '../services/firestore_service.dart';
+import '../trading/charts.dart';
 
 class AssetManagementScreen extends StatefulWidget {
   const AssetManagementScreen({Key? key}) : super(key: key);
@@ -41,13 +42,17 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'No items in inventory.',
-                    style: TextStyle(fontSize: 18.0),
+                    style: GoogleFonts.lato(
+                      fontSize: 18,
+                      color: Colors.white,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ],
               ),
@@ -124,8 +129,10 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         ),
         child: Text(
           title,
-          style: const TextStyle(
+          style: GoogleFonts.lato(
+            fontSize: 16,
             fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
           ),
         ),
       ),
@@ -142,71 +149,111 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         return ListTile(
           leading: const Icon(Icons.shopping_bag),
           title: Text(items[index].name),
-          subtitle: Column(
+          subtitle: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjusted alignment
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                items[index].vendor,
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1.0,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      items[index].vendor,
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    Text(
+                      items[index].description,
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    Text(
+                      items[index].size ?? 'N/A',
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    Text(
+                      items[index].color,
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    // Add more subtitles as needed
+                  ],
                 ),
               ),
-              Text(
-                items[index].description,
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1.0,
+              const SizedBox(width: 20.0),
+              const Expanded(child: TradingChart()),
+              const SizedBox(width: 20.0),
+              SizedBox(
+                height: 40.0, // Adjust the height as needed
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    border: Border.all(
+                      color: Colors.red,
+                      // Border color
+                      width: 1.0, // Border width
+                    ),
+                    borderRadius: BorderRadius.circular(4.0), // Border radius
+                  ),
+                  padding: const EdgeInsets.all(4.0),
+                  // Add padding inside the box
+                  child: Center(
+                    child: Text(
+                      '\$${items[index].buyingPrice}',
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              Text(
-                items[index].size ?? 'N/A',
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1.0,
+              const SizedBox(width: 20.0),
+              SizedBox(
+                height: 40.0, // Adjust the height as needed
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    border: Border.all(
+                      color: Colors.green,
+                      // Border color
+                      width: 1.0, // Border width
+                    ),
+                    borderRadius: BorderRadius.circular(4.0), // Border radius
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    // Add padding inside the box
+                    child: Center(
+                      child: Text(
+                        '\$${items[index].sellingPrice}',
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              Text(
-                items[index].color,
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              // Add more subtitles as needed
             ],
-          ),
-          trailing: Container(
-            decoration: BoxDecoration(
-              color: Colors.green,
-              border: Border.all(
-                color: Colors.green,
-                // Border color
-                width: 1.0, // Border width
-              ),
-              borderRadius: BorderRadius.circular(
-                  4.0
-              ), // Border radius
-            ),
-            child: Padding(
-              padding: const EdgeInsets
-                  .all(
-                  4.0),
-              // Add padding inside the box
-              child: Text(
-                '\$${items[index].sellingPrice}',
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            ),
           ),
         );
       },
