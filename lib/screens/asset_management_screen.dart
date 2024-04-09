@@ -212,6 +212,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                       _buildSubtitle(items[index].description),
                       _buildSubtitle(items[index].color),
                       _buildSubtitle(items[index].size ?? 'N/A'),
+                      _buildSubtitle("(${items[index].quantity.toString()})"),
                     ],
                   ),
                 ),
