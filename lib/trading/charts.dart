@@ -23,7 +23,7 @@ class TradingChart extends StatelessWidget {
             xValueMapper: (SalesData sales, _) => sales.day,
             yValueMapper: (SalesData sales, _) => sales.sales,
             dataLabelSettings: const DataLabelSettings(
-              isVisible: true,
+              isVisible: false,
               textStyle: TextStyle(
                 color: Colors.white,
               ),
@@ -55,8 +55,30 @@ class TradingChart extends StatelessWidget {
     data.add(SalesData(6, 20)); // Day 6, value 20
     data.add(SalesData(7, 17)); // Day 7, value 17
     data.add(SalesData(8, 16)); // Day 8, value 16
-    data.add(SalesData(9, 14)); // Day 9, value 14
+    data.add(SalesData(9, 200)); // Day 9, value 14
     data.add(SalesData(10, 12)); // Day 10, value 12
+    data.add(SalesData(11, 12)); // Day 10, value 12
+    data.add(SalesData(12, 12)); // Day 10, value 12
+    data.add(SalesData(13, 12)); // Day 10, value 12
+    data.add(SalesData(14, 12)); // Day 10, value 12
+    data.add(SalesData(15, 12)); // Day 10, value 12
+    data.add(SalesData(16, 12)); // Day 10, value 12
+    data.add(SalesData(17, 12)); // Day 10, value 12
+    data.add(SalesData(18, 12)); // Day 10, value 12
+    data.add(SalesData(19, 12)); // Day 10, value 12
+    data.add(SalesData(20, 12)); // Day 10, value 12
+    data.add(SalesData(21, 12)); // Day 10, value 12
+    data.add(SalesData(22, 12)); // Day 10, value 12
+    data.add(SalesData(23, 12)); // Day 10, value 12
+    data.add(SalesData(24, 12)); // Day 10, value 12
+    data.add(SalesData(25, 12)); // Day 10, value 12
+    data.add(SalesData(26, 12)); // Day 10, value 12
+    data.add(SalesData(27, 12)); // Day 10, value 12
+    data.add(SalesData(28, 12)); // Day 10, value 12
+    data.add(SalesData(29, 12)); // Day 10, value 12
+    data.add(SalesData(30, 12)); // Day 10, value 12
+
+
     // ...
     return data;
   }
