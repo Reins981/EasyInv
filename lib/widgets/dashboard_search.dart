@@ -91,21 +91,25 @@ import '../utils/helpers.dart';
                         onChanged: (value) => _searchText.value = value,
                         style: const TextStyle(color: Colors.black), // Set text color
                         cursorColor: AppColors.pink,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Search by Vendor, Name, or Category',
                           labelStyle: TextStyle(color: AppColors.pink),
                           prefixIcon: Icon(Icons.search, color: Colors.white), // Set icon color
                           border: InputBorder.none, // Remove border
                           focusedBorder: InputBorder.none,
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                                Icons.clear,
+                                color: AppColors.pink
+                            ), // Set clear icon color
+                            onPressed: () {
+                              _clearSearch();
+                            },
+                          ),
+                          suffixIconColor: AppColors.pink, // Set clear icon color
                         ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.clear, color: AppColors.rosa), // Set clear icon color
-                    onPressed: () {
-                      _clearSearch();
-                    },
                   ),
                 ],
               ),

@@ -9,10 +9,10 @@ class Item {
   String color;
   String vendor;
   String description;
-  double buyingPrice;
-  double sellingPrice;
+  dynamic buyingPrice;
+  dynamic sellingPrice;
   int quantity;
-  double profit = 0;
+  dynamic profit = 0;
 
   Item({
     this.id,
