@@ -1,6 +1,5 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
+import '../formatters/custom.dart';
 import '../models/item.dart';
 import '../services/firestore_service.dart';
 import '../utils/colors.dart';
@@ -321,14 +320,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
           ),
           suffixIcon: Ink(
             decoration: const ShapeDecoration(
-              color: AppColors.pink, // Customize the ink color to pink
+              color: Colors.transparent, // Customize the ink color to pink
               shape: CircleBorder(),
             ),
-            child: IconButton(
-              icon: const Icon(Icons.clear, color: Colors.pink), // Set the icon color to white
-              onPressed: () {
+            child: InkWell(
+              onTap: () {
                 controller.clear();
               },
+              splashColor: Colors.transparent, // Set splash color to transparent
+              child: const Icon(
+                Icons.clear,
+                color: Colors.pink,
+              ),
             ),
           ),
         ),
@@ -458,8 +461,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         buyingPrice: double.parse(_buyingController.text.trim()),
         sellingPrice: double.parse(_sellingController.text.trim()),
         quantity: int.parse(_quantityController.text.trim()),
-        sellingQuantity: 0,
-        profit: 0,
+        profit: 0.toDouble(),
       );
       // Check if a product with identical field values (except for quantity) already exists
       final Map<String, dynamic> result = await firestoreService.getItemByFields(newItem);

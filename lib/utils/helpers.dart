@@ -5,24 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/item.dart';
 import '../utils/colors.dart';
 
-// Define a custom input formatter to allow only digits or digits and a single dot
-class CustomInputFormatter extends TextInputFormatter {
-  bool intOnly = false;
-  CustomInputFormatter({required this.intOnly});
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    // Allow only digits and a single dot
-    final regExp = intOnly ? RegExp(r'^(?!0$)\d*$') : RegExp(r'^\d*\.?\d*$');
-    if (regExp.hasMatch(newValue.text)) {
-      return newValue;
-    }
-    // Return the old value if the new value doesn't match the pattern
-    return oldValue;
-  }
-}
 
 class Helper {
+
+  double calculateProfit(double buyingPrice, double sellingPrice, int quantity) {
+    return sellingPrice > buyingPrice
+        ? (sellingPrice - buyingPrice) * quantity
+        : 0;
+  }
 
   void showSnackBar(String message, String messageType,
       ScaffoldMessengerState context, {int duration = 4}) {
@@ -76,7 +66,7 @@ class Helper {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.rosa,
+          backgroundColor: AppColors.pink,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
@@ -159,6 +149,10 @@ class Helper {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: AppColors.pink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
           title: const Text(
               'Update Quantity',
               style: TextStyle(color: AppColors.rosa)
@@ -169,7 +163,7 @@ class Helper {
             decoration: InputDecoration(
               labelText: 'New Quantity',
               labelStyle: const TextStyle(color: AppColors.pink), // Customize label text color
-              fillColor: Colors.white, // Fill color of the text field
+              fillColor: AppColors.rosa, // Fill color of the text field
               filled: true,
               border: OutlineInputBorder(
                 borderSide: BorderSide.none, // No border
@@ -247,6 +241,128 @@ class Helper {
                 backgroundColor: AppColors.rosa, // Text color
               ),
               child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void handleItemSaleWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {
+    TextEditingController saleController = TextEditingController();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.pink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          title: const Text(
+              'Item sale',
+              style: TextStyle(color: AppColors.rosa)
+          ), // Change text color to rosa
+          content: TextField(
+            controller: saleController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'How many items have been sold?',
+              labelStyle: const TextStyle(color: AppColors.pink), // Customize label text color
+              fillColor: AppColors.rosa, // Fill color of the text field
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border when focused
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border for error
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border for error when focused
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Update quantity in Firebase
+                String numItemsSold = saleController.text.trim();
+                if (numItemsSold.isEmpty || numItemsSold == '0') {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        'Number of items sold cannot be empty or zero. Please enter a valid number',
+                        "Error", scaffoldMessenger);
+                  }
+                  return;
+                }
+
+                int? numItemsSoldInt = int.tryParse(numItemsSold);
+                if (numItemsSoldInt == null) {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        'Invalid sale. Please enter a valid number.',
+                        "Error", scaffoldMessenger);
+                  }
+                  return;
+                } else {
+                  if (numItemsSoldInt > item.quantity) {
+                    Navigator.of(context).pop(); // Close the dialog
+                    if (scaffoldMessenger.mounted) {
+                      showSnackBar(
+                          'Number of items sold cannot be more than the available quantity ${item.quantity}',
+                          "Error", scaffoldMessenger);
+                    }
+                    return;
+                  }
+                }
+
+                double profit = calculateProfit(item.buyingPrice, item.sellingPrice, numItemsSoldInt);
+                item.quantity -= numItemsSoldInt;
+                item.profit += profit;
+
+                // Update the new quantity and profit in Firebase
+                Map<String, String> resultSale = await firestoreService.updateItem(item, item.id!);
+                if (resultSale['status'] == 'Error') {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        "Item sale failed! ${resultSale['message']}",
+                        "Error", scaffoldMessenger);
+                  }
+                } else {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        'Item sale success! New profit: ${item.profit}!',
+                        "Success", scaffoldMessenger);
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
+              child: const Text('Sell'),
             ),
           ],
         );

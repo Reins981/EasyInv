@@ -1,6 +1,4 @@
 // lib/services/firestore_service.dart
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/item.dart';
 
@@ -119,7 +117,6 @@ class FirestoreService {
             buyingPrice: data['buyingPrice'],
             sellingPrice: data['sellingPrice'],
             quantity: data['quantity'], // Retrieve quantity from the document
-            sellingQuantity: data['sellingQuantity'],
             profit: data['profit'],
           ),
           'itemId': querySnapshot.docs.first.id, // Retrieve the document ID

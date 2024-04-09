@@ -12,8 +12,7 @@ class Item {
   double buyingPrice;
   double sellingPrice;
   int quantity;
-  int sellingQuantity = 0;
-  int profit = 0;
+  double profit = 0;
 
   Item({
     this.id,
@@ -26,7 +25,6 @@ class Item {
     required this.buyingPrice,
     required this.sellingPrice,
     required this.quantity,
-    required this.sellingQuantity,
     required this.profit,
   });
 
@@ -42,7 +40,6 @@ class Item {
       'buyingPrice': buyingPrice,
       'sellingPrice': sellingPrice,
       'quantity': quantity,
-      'sellingQuantity': sellingQuantity,
       'profit': profit,
     };
   }
@@ -59,7 +56,6 @@ class Item {
       buyingPrice: data['buyingPrice'],
       sellingPrice: data['sellingPrice'],
       quantity: data['quantity'],
-      sellingQuantity: data['sellingQuantity'],
       profit: data['profit'],
     );
   }

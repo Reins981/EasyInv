@@ -94,6 +94,7 @@ import '../utils/helpers.dart';
                         decoration: const InputDecoration(
                           labelText: 'Search by Vendor, Name, or Category',
                           labelStyle: TextStyle(color: AppColors.pink),
+                          prefixIcon: Icon(Icons.search, color: Colors.white), // Set icon color
                           border: InputBorder.none, // Remove border
                           focusedBorder: InputBorder.none,
                         ),
