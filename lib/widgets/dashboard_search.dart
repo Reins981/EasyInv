@@ -93,8 +93,8 @@ import '../utils/helpers.dart';
                         cursorColor: AppColors.pink,
                         decoration: InputDecoration(
                           labelText: 'Search by Vendor, Name, or Category',
-                          labelStyle: TextStyle(color: AppColors.pink),
-                          prefixIcon: Icon(Icons.search, color: Colors.white), // Set icon color
+                          labelStyle: const TextStyle(color: AppColors.pink),
+                          prefixIcon: const Icon(Icons.search, color: Colors.white), // Set icon color
                           border: InputBorder.none, // Remove border
                           focusedBorder: InputBorder.none,
                           suffixIcon: IconButton(

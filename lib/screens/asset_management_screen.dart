@@ -249,7 +249,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Text(
-        value,
+        value = value.length > 8 ? '${value.substring(0, 8)}...' : value
         style: GoogleFonts.lato(
           fontSize: 14,
           fontStyle: FontStyle.italic,
