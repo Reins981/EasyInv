@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-class TradingChart extends StatelessWidget {
+class TradingChart extends StatefulWidget {
   const TradingChart({Key? key}) : super(key: key);
+
+  @override
+  _TradingChartState createState() => _TradingChartState();
+}
+
+class _TradingChartState extends State<TradingChart> {
+  late List<SalesData> data;
+  late Map<String, int> upsAndDowns;
+  Color graphColor = Colors.green;
+
+  @override
+  void initState() {
+    super.initState();
+    // Call the function to calculate the number of days the stock price went up and down
+    data = _getOneMonthData();
+    upsAndDowns = _calculateNumberOfUpsAndDowns(data);
+    int upDays = upsAndDowns['upDays']!;
+    int downDays = upsAndDowns['downDays']!;
+    int neutralDays = upsAndDowns['neutralDays']!;
+    graphColor = upDays > downDays ? Colors.green : Colors.red;
+    if (neutralDays > upDays && neutralDays > downDays) {
+      graphColor = Colors.yellow;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +43,7 @@ class TradingChart extends StatelessWidget {
         ),
         series: <ChartSeries>[
           LineSeries<SalesData, int>(
-            dataSource: _getOneMonthData(), // Show only one month data
+            dataSource: data, // Show only one month data
             xValueMapper: (SalesData sales, _) => sales.day,
             yValueMapper: (SalesData sales, _) => sales.sales,
             dataLabelSettings: const DataLabelSettings(
@@ -29,15 +53,40 @@ class TradingChart extends StatelessWidget {
               ),
             ),
             enableTooltip: true,
-            markerSettings: const MarkerSettings(
+            markerSettings: MarkerSettings(
               isVisible: false,
-              color: Colors.green,
+              color: graphColor,
             ),
-            color: Colors.green, // Change line color
+            color: graphColor, // Change line color
           ),
         ],
       ),
     );
+  }
+
+  Map<String, int> _calculateNumberOfUpsAndDowns(List<SalesData> data) {
+    // This function should return the number of days the item sales went up and the number of days it went down
+    // For example, you can return the number of days the item sales went up in the last 30 days
+    // and the number of days it went down in the last 30 days
+    // You can use the data from _getOneMonthData() to calculate this
+    // Example:
+    int upDays = 0;
+    int downDays = 0;
+    int neutralDays = 0;
+    for (int i = 1; i < data.length; i++) {
+      if (data[i].sales > data[i - 1].sales) {
+        upDays++;
+      } else if (data[i].sales < data[i - 1].sales) {
+        downDays++;
+      } else if (data[i].sales == data[i - 1].sales) {
+        neutralDays++;
+      }
+    }
+    return {
+      'upDays': upDays,
+      'downDays': downDays,
+      'neutralDays': neutralDays
+    };
   }
 
   // Function to get one month data
