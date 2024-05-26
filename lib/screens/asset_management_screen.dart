@@ -212,7 +212,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                       _buildSubtitle(items[index].description),
                       _buildSubtitle(items[index].color),
                       _buildSubtitle(items[index].size ?? 'N/A'),
-                      _buildSubtitle("(${items[index].quantity.toString()})"),
+                      _buildSubtitle("(${items[index].quantity.toString()})", bold: true),
                     ],
                   ),
                 ),
@@ -246,13 +246,14 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
     );
   }
 
-  Widget _buildSubtitle(String value) {
+  Widget _buildSubtitle(String value, {bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Text(
-        value = value.length > 8 ? '${value.substring(0, 8)}...' : value,
+        value = value.length > 6 ? '${value.substring(0, 6)}..' : value,
         style: GoogleFonts.lato(
           fontSize: 14,
+          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
           fontStyle: FontStyle.italic,
           letterSpacing: 1.0,
           color: Colors.grey[700],

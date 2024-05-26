@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../formatters/custom.dart';
 import '../models/item.dart';
@@ -462,6 +463,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         sellingPrice: double.parse(_sellingController.text.trim()),
         quantity: int.parse(_quantityController.text.trim()),
         profit: 0.toDouble(),
+        date: Timestamp.now(),
       );
       // Check if a product with identical field values (except for quantity) already exists
       final Map<String, dynamic> result = await firestoreService.getItemByFields(newItem);
