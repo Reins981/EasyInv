@@ -14,7 +14,6 @@ class Item {
   dynamic sellingPrice;
   int quantity;
   dynamic profit = 0;
-  Timestamp date = Timestamp.now();
 
   Item({
     this.id,
@@ -28,7 +27,6 @@ class Item {
     required this.sellingPrice,
     required this.quantity,
     required this.profit,
-    required this.date,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,7 +42,6 @@ class Item {
       'sellingPrice': sellingPrice,
       'quantity': quantity,
       'profit': profit,
-      'date': date,
     };
   }
 
@@ -61,8 +58,25 @@ class Item {
       sellingPrice: data['sellingPrice'],
       quantity: data['quantity'],
       profit: data['profit'],
-      date: data['date'],
     );
+  }
+
+  Future<void> recordSale(int quantitySold) async {
+    final sales = quantitySold * (sellingPrice - buyingPrice);
+    final saleDate = Timestamp.now();
+
+    await FirebaseFirestore.instance.collection('items').doc(id).update({
+      'quantity': quantity - quantitySold,
+    });
+
+    await FirebaseFirestore.instance.collection('sales').add({
+      'itemId': id,
+      'quantitySold': quantitySold,
+      'sales': sales,
+      'date': saleDate,
+    });
+    // Update the local quantity
+    quantity = quantity - quantitySold;
   }
 
 }

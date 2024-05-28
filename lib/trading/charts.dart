@@ -3,65 +3,74 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class TradingChart extends StatefulWidget {
-  const TradingChart({Key? key}) : super(key: key);
+  final String itemId;
+  const TradingChart({super.key, required this.itemId});
 
   @override
   _TradingChartState createState() => _TradingChartState();
 }
 
 class _TradingChartState extends State<TradingChart> {
-  late List<SalesData> data;
+  late Future<List<SalesData>> futureData;
   late Map<String, int> upsAndDowns;
   Color graphColor = Colors.green;
 
   @override
   void initState() {
     super.initState();
-    // Call the function to calculate the number of days the stock price went up and down
-    data = _getOneMonthData();
-    upsAndDowns = _calculateNumberOfUpsAndDowns(data);
-    int upDays = upsAndDowns['upDays']!;
-    int downDays = upsAndDowns['downDays']!;
-    int neutralDays = upsAndDowns['neutralDays']!;
-    graphColor = upDays > downDays ? Colors.green : Colors.red;
-    if (neutralDays > upDays && neutralDays > downDays) {
-      graphColor = Colors.yellow;
-    }
+    futureData = _getOneMonthData(widget.itemId);
+    futureData.then((data) {
+      upsAndDowns = _calculateNumberOfUpsAndDowns(data);
+      int upDays = upsAndDowns['upDays']!;
+      int downDays = upsAndDowns['downDays']!;
+      int neutralDays = upsAndDowns['neutralDays']!;
+      graphColor = upDays > downDays ? Colors.green : Colors.red;
+      if (neutralDays > upDays && neutralDays > downDays) {
+        graphColor = Colors.yellow;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 100, // Adjust height as needed
-      child: SfCartesianChart(
-        // Configure the chart here
-        plotAreaBorderWidth: 0,
-        primaryXAxis: NumericAxis(
-          isVisible: false, // Hide X axis
-        ),
-        primaryYAxis: NumericAxis(
-          isVisible: false, // Hide Y axis
-        ),
-        series: <ChartSeries>[
-          LineSeries<SalesData, int>(
-            dataSource: data, // Show only one month data
-            xValueMapper: (SalesData sales, _) => sales.day,
-            yValueMapper: (SalesData sales, _) => sales.sales,
-            dataLabelSettings: const DataLabelSettings(
-              isVisible: false,
-              textStyle: TextStyle(
-                color: Colors.white,
-              ),
+    return FutureBuilder<List<SalesData>>(
+      future: futureData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No data available');
+        } else {
+          List<SalesData> data = snapshot.data!;
+          return SizedBox(
+            height: 100,
+            child: SfCartesianChart(
+              plotAreaBorderWidth: 0,
+              primaryXAxis: NumericAxis(isVisible: false),
+              primaryYAxis: NumericAxis(isVisible: false),
+              series: <ChartSeries>[
+                LineSeries<SalesData, int>(
+                  dataSource: data,
+                  xValueMapper: (SalesData sales, _) => sales.day,
+                  yValueMapper: (SalesData sales, _) => sales.sales,
+                  dataLabelSettings: const DataLabelSettings(
+                    isVisible: false,
+                    textStyle: TextStyle(color: Colors.white),
+                  ),
+                  enableTooltip: true,
+                  markerSettings: MarkerSettings(
+                    isVisible: false,
+                    color: graphColor,
+                  ),
+                  color: graphColor,
+                ),
+              ],
             ),
-            enableTooltip: true,
-            markerSettings: MarkerSettings(
-              isVisible: false,
-              color: graphColor,
-            ),
-            color: graphColor, // Change line color
-          ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
 
@@ -91,7 +100,7 @@ class _TradingChartState extends State<TradingChart> {
   }
 
   // Function to get one month data
-  Future<List<SalesData>> _getOneMonthData() async {
+  Future<List<SalesData>> _getOneMonthData(String itemId) async {
     // This function should return data for one month
     // For example, you can return the data for the last 30 days
     List<SalesData> data = [];
@@ -100,19 +109,33 @@ class _TradingChartState extends State<TradingChart> {
     DateTime currentTime = DateTime.now();
     DateTime oneMonthAgo = currentTime.subtract(const Duration(days: 30));
 
-    // Get data from Firestore for the last 30 days
+    // Query Firestore for sales data of the specific item in the last 30 days
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('items')
+        .collection('sales')
+        .where('itemId', isEqualTo: itemId)
         .where('date', isGreaterThanOrEqualTo: oneMonthAgo)
         .where('date', isLessThanOrEqualTo: currentTime)
         .get();
 
+    Map<int, double> dailySales = {};
+
     // Convert querySnapshot to List<SalesData>
     querySnapshot.docs.forEach((doc) {
-      data.add(SalesData(doc['day'], doc['sales']));
+      DateTime salesDate = (doc['date'] as Timestamp).toDate();
+      int day = salesDate.day;
+      double sales = doc['dales'];
+
+      if (dailySales.containsKey(day)) {
+        dailySales[day] = dailySales[day]! + sales;
+      } else {
+        dailySales[day] = sales;
+      }
     });
 
-    // ...
+    dailySales.forEach((day, sales) {
+      data.add(SalesData(day, sales));
+    });
+
     return data;
   }
 }

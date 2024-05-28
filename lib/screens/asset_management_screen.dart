@@ -217,12 +217,12 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                   ),
                 ),
                 const SizedBox(width: 20.0),
-                const Expanded(
+                Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TradingChart(),
+                      TradingChart(itemId: items[index].id!),
                     ],
                   ),
                 ),

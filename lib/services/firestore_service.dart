@@ -118,7 +118,6 @@ class FirestoreService {
             sellingPrice: data['sellingPrice'],
             quantity: data['quantity'], // Retrieve quantity from the document
             profit: data['profit'],
-            date: data['date'],
           ),
           'itemId': querySnapshot.docs.first.id, // Retrieve the document ID
           'status': 'Success'
