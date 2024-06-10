@@ -1,10 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import '../utils/helpers.dart';
 
 class TradingChart extends StatefulWidget {
   final String itemId;
-  const TradingChart({super.key, required this.itemId});
+
+  const TradingChart({
+    super.key,
+    required this.itemId
+  });
 
   @override
   _TradingChartState createState() => _TradingChartState();
@@ -14,6 +19,7 @@ class _TradingChartState extends State<TradingChart> {
   late Future<List<SalesData>> futureData;
   late Map<String, int> upsAndDowns;
   Color graphColor = Colors.green;
+  Helper _helper = Helper();
 
   @override
   void initState() {
@@ -39,9 +45,9 @@ class _TradingChartState extends State<TradingChart> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return _helper.showStatus('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('No data available');
+          return _helper.showStatus('No data available');
         } else {
           List<SalesData> data = snapshot.data!;
           return SizedBox(

@@ -75,7 +75,6 @@ class FirestoreService {
     };
   }
 
-
   Future<Map<String, dynamic>> getItemByFields(Item newItem) async {
     try {
       late QuerySnapshot querySnapshot;

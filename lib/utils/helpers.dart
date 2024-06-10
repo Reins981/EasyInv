@@ -29,6 +29,7 @@ class Helper {
             color: Colors.white,
             letterSpacing: 1.0,
           ),
+          textAlign: TextAlign.center,
         ),
         duration: Duration(seconds: duration),
         shape: RoundedRectangleBorder(
@@ -44,10 +45,10 @@ class Helper {
   Center showStatus(String status) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         decoration: BoxDecoration(
           color: AppColors.pink,
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
         ),
         child: Text(
           status,
@@ -104,7 +105,7 @@ class Helper {
     );
   }
 
-  void handleItemDeleteWithDialog(BuildContext context, Item item, deleteFunction) {
+  void handleItemDeleteWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -127,7 +128,7 @@ class Helper {
             ),
             TextButton(
               onPressed: () {
-                deleteFunction(context, item); // Call delete function
+                _deleteItem(context, item, firestoreService); // Call delete function
                 Navigator.of(context).pop(); // Close the dialog
               },
               child: const Text(
@@ -139,6 +140,23 @@ class Helper {
         );
       },
     );
+  }
+
+  void _deleteItem(BuildContext context, Item item, FirestoreService firestoreService) async {
+    Map<String, String> result = await firestoreService.deleteItem(item.id!);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    if (result['status'] == 'Error') {
+      if (scaffoldMessenger.mounted) {
+        showDialogBox(
+            context, "Deleting Item failed!", result['message']!);
+      }
+    } else {
+      if (scaffoldMessenger.mounted) {
+        showSnackBar('Item deleted successfully!', "Success",
+            scaffoldMessenger, duration: 2);
+      }
+    }
   }
 
   void handleItemUpdateQuantityWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {

@@ -5,6 +5,7 @@ import '../services/firestore_service.dart';
 import '../trading/charts.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
+import 'item_details.dart';
 
 class AssetManagementScreen extends StatefulWidget {
   const AssetManagementScreen({Key? key}) : super(key: key);
@@ -240,6 +241,14 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                 ),
               ],
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ItemDetailScreen(item: items[index], helper: helper),
+                ),
+              );
+            },
           ),
         );
       },

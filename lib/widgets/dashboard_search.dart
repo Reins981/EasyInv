@@ -247,7 +247,7 @@ import '../utils/helpers.dart';
         icon: Icon(Icons.delete),
         color: Colors.black,
         onPressed: () {
-          helper.handleItemDeleteWithDialog(context, item, _deleteItem);
+          helper.handleItemDeleteWithDialog(context, item, firestoreService);
         },
       );
     }
@@ -298,22 +298,4 @@ import '../utils/helpers.dart';
         ),
       );
     }
-
-    void _deleteItem(BuildContext context, Item item) async {
-      Map<String, String> result = await firestoreService.deleteItem(item.id!);
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-      if (result['status'] == 'Error') {
-        if (mounted) {
-          helper.showDialogBox(
-              context, "Deleting Item failed!", result['message']!);
-        }
-      } else {
-        if (scaffoldMessenger.mounted) {
-          helper.showSnackBar('Item deleted successfully!', "Success",
-              scaffoldMessenger, duration: 2);
-        }
-      }
-    }
-
   }
