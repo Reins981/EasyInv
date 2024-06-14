@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import '../utils/colors.dart';
 import '../utils/helpers.dart';
 
 class TradingChart extends StatefulWidget {
@@ -43,7 +44,9 @@ class _TradingChartState extends State<TradingChart> {
       future: futureData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const Center(child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+          ));
         } else if (snapshot.hasError) {
           return _helper.showStatus('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -129,7 +132,7 @@ class _TradingChartState extends State<TradingChart> {
     querySnapshot.docs.forEach((doc) {
       DateTime salesDate = (doc['date'] as Timestamp).toDate();
       int day = salesDate.day;
-      double sales = doc['dales'];
+      double sales = doc['sales'];
 
       if (dailySales.containsKey(day)) {
         dailySales[day] = dailySales[day]! + sales;

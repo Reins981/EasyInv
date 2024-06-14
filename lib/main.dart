@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:easy_inv/screens/asset_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/rendering.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
       routes: {
         //'/login': (context) => LoginScreen(docOperations: docOperations),
         '/dashboard': (context) => DashboardScreen(),
+        '/asset_management': (context) => AssetManagementScreen(),
         //'/biometric': (context) => AuthenticatedScreen(),
         //'/registration': (context) => const RegistrationScreen(),
         // ... other routes

@@ -105,8 +105,8 @@ class Helper {
     );
   }
 
-  void handleItemDeleteWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {
-    showDialog(
+  Future<void> handleItemDeleteWithDialog(BuildContext context, Item item, FirestoreService firestoreService) async {
+    await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -128,7 +128,7 @@ class Helper {
             ),
             TextButton(
               onPressed: () {
-                _deleteItem(context, item, firestoreService); // Call delete function
+                _deleteItem(item, firestoreService); // Call delete function
                 Navigator.of(context).pop(); // Close the dialog
               },
               child: const Text(
@@ -142,24 +142,11 @@ class Helper {
     );
   }
 
-  void _deleteItem(BuildContext context, Item item, FirestoreService firestoreService) async {
-    Map<String, String> result = await firestoreService.deleteItem(item.id!);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    if (result['status'] == 'Error') {
-      if (scaffoldMessenger.mounted) {
-        showDialogBox(
-            context, "Deleting Item failed!", result['message']!);
-      }
-    } else {
-      if (scaffoldMessenger.mounted) {
-        showSnackBar('Item deleted successfully!', "Success",
-            scaffoldMessenger, duration: 2);
-      }
-    }
+  void _deleteItem(Item item, FirestoreService firestoreService) async {
+    await firestoreService.deleteItem(item.id!);
   }
 
-  void handleItemUpdateQuantityWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {
+  void handleItemUpdateQuantityWithDialog(BuildContext context, Item item, FirestoreService firestoreService, Function(Item)? onItemUpdate) {
     TextEditingController quantityController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -179,7 +166,7 @@ class Helper {
             controller: quantityController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'New Quantity',
+              labelText: 'Add Quantity',
               labelStyle: const TextStyle(color: AppColors.pink), // Customize label text color
               fillColor: AppColors.rosa, // Fill color of the text field
               filled: true,
@@ -252,6 +239,9 @@ class Helper {
                         'Quantity successfully updated to ${item.quantity}!',
                         "Success", scaffoldMessenger);
                   }
+                  if (onItemUpdate != null) {
+                    onItemUpdate(item); // Call the callback with the updated item
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -266,7 +256,7 @@ class Helper {
     );
   }
 
-  void handleItemSaleWithDialog(BuildContext context, Item item, FirestoreService firestoreService) {
+  void handleItemSaleWithDialog(BuildContext context, Item item, FirestoreService firestoreService, Function(Item) onItemSale) {
     TextEditingController saleController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -354,12 +344,8 @@ class Helper {
                   }
                 }
 
-                double profit = calculateProfit(item.buyingPrice, item.sellingPrice, numItemsSoldInt);
-                item.quantity -= numItemsSoldInt;
-                item.profit += profit;
-
                 // Update the new quantity and profit in Firebase
-                Map<String, String> resultSale = await firestoreService.updateItem(item, item.id!);
+                Map<String, String> resultSale = await item.recordSale(numItemsSoldInt);
                 if (resultSale['status'] == 'Error') {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
@@ -368,6 +354,7 @@ class Helper {
                         "Error", scaffoldMessenger);
                   }
                 } else {
+                  onItemSale(item);  // Call the callback with the updated item
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(

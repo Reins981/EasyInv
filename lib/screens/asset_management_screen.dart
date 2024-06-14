@@ -61,7 +61,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
         stream: firestoreService.getAllItems(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+            ));
           }
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
@@ -71,10 +73,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'No items in inventory.',
+                    'No assets found.',
                     style: GoogleFonts.lato(
                       fontSize: 18,
-                      color: Colors.white,
                       letterSpacing: 1.0,
                     ),
                   ),
@@ -333,27 +334,6 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
             ),
           ),
         ],
-      ),
-    );
-  }
-
-
-  Widget _buildSellButton(BuildContext context, Item item) {
-    return ElevatedButton(
-      onPressed: () {
-        helper.handleItemSaleWithDialog(context, item, firestoreService);
-      },
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.purpleAccent,
-        backgroundColor: AppColors.rosa,
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.all(16.0),
-        elevation: 4,
-      ),
-      child: const Icon(
-        Icons.attach_money,
-        color: Colors.purpleAccent,
-        size: 30.0,
       ),
     );
   }

@@ -61,22 +61,30 @@ class Item {
     );
   }
 
-  Future<void> recordSale(int quantitySold) async {
-    final sales = quantitySold * (sellingPrice - buyingPrice);
+  Future<Map<String, String>> recordSale(int quantitySold) async {
+    final sales = sellingPrice > buyingPrice ? quantitySold * (sellingPrice - buyingPrice) : 0;
     final saleDate = Timestamp.now();
 
-    await FirebaseFirestore.instance.collection('items').doc(id).update({
-      'quantity': quantity - quantitySold,
-    });
+    try {
+      quantity = quantity - quantitySold;
+      profit = profit + sales;
 
-    await FirebaseFirestore.instance.collection('sales').add({
-      'itemId': id,
-      'quantitySold': quantitySold,
-      'sales': sales,
-      'date': saleDate,
-    });
-    // Update the local quantity
-    quantity = quantity - quantitySold;
+      await FirebaseFirestore.instance.collection('items').doc(id).update({
+        'quantity': quantity,
+        'profit': profit,
+      });
+
+      await FirebaseFirestore.instance.collection('sales').add({
+        'itemId': id,
+        'quantitySold': quantitySold,
+        'sales': sales,
+        'date': saleDate,
+      });
+
+      return {'status': 'Success', 'message': 'Sale recorded successfully'};
+    } catch (e) {
+      return {'status': 'Error', 'message': '$e'};
+    }
   }
 
 }

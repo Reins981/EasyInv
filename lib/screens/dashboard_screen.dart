@@ -59,7 +59,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             stream: firestoreService.getAllItems(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+                ));
               }
               if (snapshot.hasError) {
                 return Center(child: Text(snapshot.error.toString()));
@@ -83,6 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               final totalItems = snapshot.data!.length;
               final totalCategories = snapshot.data!.map((item) => item.category).toSet().length;
               lowStockItems = snapshot.data!.where((item) => item.quantity < 5).toList();
+
               double totalProfit = snapshot.data!.fold(0, (total, item) => total + item.profit);
               double chartHeight = calculateChartHeight(snapshot.data!);
 

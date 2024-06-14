@@ -47,6 +47,7 @@ import '../utils/helpers.dart';
       item.name.toLowerCase().contains(searchText) ||
           item.vendor.toLowerCase().contains(searchText) ||
           item.category.toLowerCase().contains(searchText)).toList();
+      print('Filtered items: $filteredItems');
       setState(() {});
     }
 
@@ -58,7 +59,7 @@ import '../utils/helpers.dart';
     }
 
     Widget _buildLowStockItemsCard(List<Item> items) {
-      filteredItems ??= items;
+      List<Item> resultItems = filteredItems ?? items;
       return Card(
         elevation: 4.0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -114,17 +115,25 @@ import '../utils/helpers.dart';
                 ],
               ),
               const SizedBox(height: 12.0),
-              SizedBox(
-                height: 200.0, // Set a fixed height for the scrollable area
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: filteredItems!.map((item) {
-                      return _buildLowStockItemCard(item);
-                    }).toList(),
+              if (resultItems.isEmpty)
+                const Center(
+                  child: Text(
+                    'No low stock items.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 200.0, // Set a fixed height for the scrollable area
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: resultItems.map((item) {
+                        return _buildLowStockItemCard(item);
+                      }).toList(),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -234,7 +243,12 @@ import '../utils/helpers.dart';
             icon: Icon(Icons.add),
             color: Colors.black,
             onPressed: () {
-              helper.handleItemUpdateQuantityWithDialog(context, item, firestoreService);
+              helper.handleItemUpdateQuantityWithDialog(
+                  context,
+                  item,
+                  firestoreService,
+                  null
+              );
             },
           ),
         ),
@@ -246,8 +260,12 @@ import '../utils/helpers.dart';
         padding: EdgeInsets.zero,
         icon: Icon(Icons.delete),
         color: Colors.black,
-        onPressed: () {
-          helper.handleItemDeleteWithDialog(context, item, firestoreService);
+        onPressed: () async {
+          await helper.handleItemDeleteWithDialog(
+              context,
+              item,
+              firestoreService
+          );
         },
       );
     }
