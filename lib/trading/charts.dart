@@ -1,15 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_inv/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import '../models/item.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
 
 class TradingChart extends StatefulWidget {
+  final Item item;
   final String itemId;
+  final FirestoreService firestoreService;
 
   const TradingChart({
     super.key,
-    required this.itemId
+    required this.item,
+    required this.itemId,
+    required this.firestoreService
   });
 
   @override
@@ -31,10 +37,12 @@ class _TradingChartState extends State<TradingChart> {
       int upDays = upsAndDowns['upDays']!;
       int downDays = upsAndDowns['downDays']!;
       int neutralDays = upsAndDowns['neutralDays']!;
-      graphColor = upDays > downDays ? Colors.green : Colors.red;
+      graphColor = upDays > downDays ? Colors.green : upDays == downDays ? Colors.yellow : Colors.red;
       if (neutralDays > upDays && neutralDays > downDays) {
         graphColor = Colors.yellow;
       }
+      widget.item.trend = graphColor == Colors.green ? 'up' : graphColor == Colors.red ? 'down' : 'flat';
+      widget.firestoreService.updateItem(widget.item, widget.item.id!);
     });
   }
 
@@ -126,13 +134,13 @@ class _TradingChartState extends State<TradingChart> {
         .where('date', isLessThanOrEqualTo: currentTime)
         .get();
 
-    Map<int, double> dailySales = {};
+    Map<int, dynamic> dailySales = {};
 
     // Convert querySnapshot to List<SalesData>
     querySnapshot.docs.forEach((doc) {
       DateTime salesDate = (doc['date'] as Timestamp).toDate();
       int day = salesDate.day;
-      double sales = doc['sales'];
+      dynamic sales = doc['sales'];
 
       if (dailySales.containsKey(day)) {
         dailySales[day] = dailySales[day]! + sales;
@@ -153,5 +161,12 @@ class SalesData {
   SalesData(this.day, this.sales);
 
   final int day; // Day of the month
-  final double sales; // Sales is the profit * number of items sold
+  final dynamic sales; // Sales is the profit * number of items sold
+
+  Map<String, dynamic> toJson() {
+    return {
+      'day': day,
+      'sales': sales,
+    };
+  }
 }

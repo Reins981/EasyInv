@@ -224,7 +224,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TradingChart(itemId: items[index].id!),
+                      TradingChart(item: items[index], itemId: items[index].id!, firestoreService: firestoreService),
                     ],
                   ),
                 ),

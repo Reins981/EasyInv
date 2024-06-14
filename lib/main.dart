@@ -2,7 +2,6 @@
 import 'package:easy_inv/screens/asset_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/rendering.dart';
 import 'firebase_options.dart';
 import 'screens/dashboard_screen.dart';
 import 'utils/colors.dart';

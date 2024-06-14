@@ -1,6 +1,5 @@
 // lib/models/item.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 class Item {
   String? id;
@@ -14,6 +13,7 @@ class Item {
   dynamic sellingPrice;
   int quantity;
   dynamic profit = 0;
+  String? trend;
 
   Item({
     this.id,
@@ -27,6 +27,7 @@ class Item {
     required this.sellingPrice,
     required this.quantity,
     required this.profit,
+    this.trend,
   });
 
   Map<String, dynamic> toJson() {
@@ -42,6 +43,7 @@ class Item {
       'sellingPrice': sellingPrice,
       'quantity': quantity,
       'profit': profit,
+      if (trend != null) 'trend': trend,
     };
   }
 
@@ -58,6 +60,7 @@ class Item {
       sellingPrice: data['sellingPrice'],
       quantity: data['quantity'],
       profit: data['profit'],
+      trend: data['trend'],
     );
   }
 

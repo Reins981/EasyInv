@@ -21,14 +21,31 @@ class ItemDetailScreen extends StatefulWidget {
   _ItemDetailScreenState createState() => _ItemDetailScreenState();
 }
 
-  class _ItemDetailScreenState extends State<ItemDetailScreen> {
+  class _ItemDetailScreenState extends State<ItemDetailScreen> with SingleTickerProviderStateMixin{
 
     late Item _item;
+    late final AnimationController _animationController;
+    late Animation<double> _animation;
 
     @override
     void initState() {
       super.initState();
       _item = widget.item;
+      _animationController = AnimationController(
+        duration: const Duration(seconds: 2),
+        vsync: this,
+      );
+      _animation = CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut, // Adjust curve as needed
+      );
+      _animationController.forward(); // Start the animation
+    }
+
+    @override
+    void dispose() {
+      _animationController.dispose(); // Dispose the animation controller
+      super.dispose();
     }
 
     void _addItem() {
@@ -94,16 +111,43 @@ class ItemDetailScreen extends StatefulWidget {
                       color: AppColors.pink,
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  if (_item.trend != null)
+                    if (_item.trend == 'up')
+                      const Icon(
+                        Icons.trending_up,
+                        color: Colors.green,
+                        size: 30,
+                      )
+                    else if (_item.trend == 'down')
+                      const Icon(
+                        Icons.trending_down,
+                        color: Colors.red,
+                        size: 30,
+                      )
+                    else
+                      const Icon(
+                        Icons.trending_flat,
+                        color: Colors.grey,
+                        size: 30,
+                      ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildTotalProfitWidget(context, _item.profit),
+                ],
+              ),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildCombinedDetailCard([
-                    {'title': 'Name', 'value': _item.name},
-                    {'title': 'Vendor', 'value': _item.vendor},
-                    {'title': 'Description', 'value': _item.description},
+                    {'title': 'Name', 'value': _item.name.length > 20 ? '${_item.name.substring(0, 20)}...' : _item.name},
+                    {'title': 'Vendor', 'value': _item.vendor.length > 20 ? '${_item.vendor.substring(0, 20)}...' : _item.vendor},
+                    {'title': 'Description', 'value': _item.description.length  > 20 ? '${_item.description.substring(0, 20)}...' : _item.description},
                   ]),
                   const SizedBox(width: 10),
                   _buildCombinedDetailCard([
@@ -121,7 +165,7 @@ class ItemDetailScreen extends StatefulWidget {
                   color: AppColors.rosa.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: TradingChart(itemId: _item.id!),
+                child: TradingChart(item: _item, itemId: _item.id!, firestoreService: widget.firestoreService),
               ),
               const SizedBox(height: 20),
               Row(
@@ -217,6 +261,61 @@ class ItemDetailScreen extends StatefulWidget {
               );
             }).toList(),
           ),
+        ),
+      );
+    }
+
+    Widget _buildTotalProfitWidget(BuildContext context, double totalProfit) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.purpleAccent, Colors.pink],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 6.0,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                ScaleTransition(
+                  scale: _animation, // Assuming _animation is defined in your State class
+                  child: const Icon(
+                    Icons.attach_money,
+                    color: Colors.white,
+                    size: 20.0,
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\$$totalProfit',
+                      style: const TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Roboto',
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       );
     }
