@@ -105,7 +105,8 @@ class Helper {
     );
   }
 
-  Future<void> handleItemDeleteWithDialog(BuildContext context, Item item, FirestoreService firestoreService) async {
+  Future<bool> handleItemDeleteWithDialog(BuildContext context, Item item, FirestoreService firestoreService) async {
+    bool result = false;
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -133,6 +134,7 @@ class Helper {
               onPressed: () {
                 _deleteItem(item, firestoreService); // Call delete function
                 Navigator.of(context).pop(); // Close the dialog
+                result = true;
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -146,6 +148,7 @@ class Helper {
         );
       },
     );
+    return result;
   }
 
   void _deleteItem(Item item, FirestoreService firestoreService) async {

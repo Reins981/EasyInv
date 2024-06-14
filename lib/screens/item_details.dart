@@ -62,12 +62,12 @@ class ItemDetailScreen extends StatefulWidget {
     }
 
     void _deleteItem() async {
-      await widget.helper.handleItemDeleteWithDialog(
+      bool result = await widget.helper.handleItemDeleteWithDialog(
           context,
           _item,
           widget.firestoreService
       );
-      if (mounted) {
+      if (mounted && result == true) {
         Navigator.pushReplacementNamed(context, '/asset_management');
       }
     }
