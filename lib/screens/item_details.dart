@@ -90,6 +90,7 @@ class ItemDetailScreen extends StatefulWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(_item.name),
+          centerTitle: true,
           backgroundColor: AppColors.rosa,
         ),
         body: SingleChildScrollView(
@@ -218,7 +219,12 @@ class ItemDetailScreen extends StatefulWidget {
           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         ),
-        child: Icon(icon, size: 28, color: foregroundColor),
+        child: label == 'Sell' ?
+        GradientIcon(
+          icon: icon,
+          gradientColors: [Colors.purpleAccent, Colors.pink], // Replace with your gradient colors
+          size: 28,
+        ) : Icon(icon, size: 28, color: foregroundColor),
       );
     }
 

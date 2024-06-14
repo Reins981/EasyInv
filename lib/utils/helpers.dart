@@ -110,7 +110,7 @@ class Helper {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.rosa,
+          backgroundColor: AppColors.pink,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
@@ -121,9 +121,12 @@ class Helper {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
               child: const Text(
                 'No',
-                style: TextStyle(color: AppColors.pink), // Customize color
               ),
             ),
             TextButton(
@@ -131,9 +134,12 @@ class Helper {
                 _deleteItem(item, firestoreService); // Call delete function
                 Navigator.of(context).pop(); // Close the dialog
               },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
               child: const Text(
                 'Yes',
-                style: TextStyle(color: AppColors.pink), // Customize color
               ),
             ),
           ],
