@@ -241,19 +241,12 @@ class FirestoreService {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('items')
+          .orderBy('profit', descending: order == "descending")
           .get();
 
       List<Item> items = querySnapshot.docs
           .map((doc) => Item.fromFirestore(doc.data() as Map<String, dynamic>, doc))
           .toList();
-
-      if (order == "ascending") {
-        // Sort the items by profit in ascending order
-        items.sort((a, b) => a.profit.compareTo(b.profit));
-      } else {
-        // Sort the items by profit in descending order
-        items.sort((a, b) => b.profit.compareTo(a.profit));
-      }
 
       itemList = items;
     } catch (e) {
@@ -268,19 +261,12 @@ class FirestoreService {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('items')
+          .orderBy('name', descending: order == "descending")
           .get();
 
       List<Item> items = querySnapshot.docs
           .map((doc) => Item.fromFirestore(doc.data() as Map<String, dynamic>, doc))
           .toList();
-
-      if (order == "ascending") {
-        // Sort the items by name in ascending order
-        items.sort((a, b) => a.name.compareTo(b.name));
-      } else {
-        // Sort the items by name in descending order
-        items.sort((a, b) => b.name.compareTo(a.name));
-      }
 
       itemList = items;
     } catch (e) {
