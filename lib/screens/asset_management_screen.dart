@@ -129,14 +129,11 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
   Widget _buildSortColumn(String title) {
     return GestureDetector(
       onTap: () {
-        print("Tapped!!!!!!!!!");
-        print(title);
-        print(nameOrder);
         title == 'Trending'
             ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByQuantitySold(order: trendOrder)
             : title == 'Top Profits'
-            ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByProfit(order: "descending")
-            : Provider.of<SearchProvider>(context, listen: false).getItemsSortedByName(order: "ascending");
+            ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByProfit(order: profitOrder)
+            : Provider.of<SearchProvider>(context, listen: false).getItemsSortedByName(order: nameOrder);
 
         if (title == 'Trending') {
           trendOrder = trendOrder == 'descending' ? 'ascending' : 'descending';
