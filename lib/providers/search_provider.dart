@@ -25,21 +25,30 @@ class SearchProvider with ChangeNotifier {
 
   Future<void> _fetchItems() async {
     try {
-      final fetchedItems = await firestoreService.getAllItems().first;
-      _items = fetchedItems;
-      if (_items != null) {
-        _items!.sort((a, b) {
-          // First, compare by vendor
-          int vendorComparison = a.vendor.compareTo(b.vendor);
-          if (vendorComparison != 0) {
-            return vendorComparison;
-          }
-          // If vendors are equal, compare by category
-          return a.category.compareTo(b.category);
-        });
-      }
-      _filterItems();
-      notifyListeners();
+      // Listen to the stream of items from Firestore
+      firestoreService.getAllItems().listen((List<Item>? fetchedItems) {
+        if (fetchedItems != null) {
+          fetchedItems.sort((a, b) {
+            // First, compare by vendor
+            int vendorComparison = a.vendor.compareTo(b.vendor);
+            if (vendorComparison != 0) {
+              return vendorComparison;
+            }
+            // If vendors are equal, compare by category
+            return a.category.compareTo(b.category);
+          });
+        }
+        _items = fetchedItems;
+        _filterItems();
+        notifyListeners();
+      }, onError: (dynamic error) {
+        // Handle stream errors
+        print('Stream error: $error');
+        // Optionally set _items or _filteredItems to null or handle the error state
+        _items = null;
+        _filteredItems = null;
+        notifyListeners(); // Notify listeners about the error state
+      });
     } catch (e) {
       // Handle the error here
       print('Failed to fetch items: $e');
