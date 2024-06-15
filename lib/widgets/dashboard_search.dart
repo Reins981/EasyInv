@@ -26,8 +26,8 @@ import '../utils/helpers.dart';
 
     @override
     void initState() {
-      _searchText.addListener(_filterItems);
       super.initState();
+      _searchText.addListener(_filterItems);
     }
 
     @override
@@ -47,7 +47,6 @@ import '../utils/helpers.dart';
       item.name.toLowerCase().contains(searchText) ||
           item.vendor.toLowerCase().contains(searchText) ||
           item.category.toLowerCase().contains(searchText)).toList();
-      print('Filtered items: $filteredItems');
       setState(() {});
     }
 
