@@ -47,21 +47,42 @@ class Item {
     };
   }
 
-  static Item fromFirestore(Map<String, dynamic> data, QueryDocumentSnapshot doc) {
-    return Item(
-      id: doc.id,
-      name: data['name'],
-      category: data['category'],
-      size: data['size'],
-      color: data['color'],
-      vendor: data['vendor'],
-      description: data['description'],
-      buyingPrice: data['buyingPrice'],
-      sellingPrice: data['sellingPrice'],
-      quantity: data['quantity'],
-      profit: data['profit'],
-      trend: data['trend'],
-    );
+  static Item fromFirestore(Map<String, dynamic> data, [dynamic secondParam]) {
+    if (secondParam is String) {
+      // Create item when secondParam is a String (assuming it's the ID)
+      return Item(
+        id: secondParam,
+        name: data['name'],
+        category: data['category'],
+        size: data['size'],
+        color: data['color'],
+        vendor: data['vendor'],
+        description: data['description'],
+        buyingPrice: data['buyingPrice'],
+        sellingPrice: data['sellingPrice'],
+        quantity: data['quantity'],
+        profit: data['profit'],
+        trend: data['trend'],
+      );
+    } else if (secondParam is QueryDocumentSnapshot) {
+      // Create item when secondParam is a QueryDocumentSnapshot
+      return Item(
+        id: secondParam.id,
+        name: data['name'],
+        category: data['category'],
+        size: data['size'],
+        color: data['color'],
+        vendor: data['vendor'],
+        description: data['description'],
+        buyingPrice: data['buyingPrice'],
+        sellingPrice: data['sellingPrice'],
+        quantity: data['quantity'],
+        profit: data['profit'],
+        trend: data['trend'],
+      );
+    } else {
+      throw ArgumentError('Second parameter must be either a String or a QueryDocumentSnapshot');
+    }
   }
 
   Future<Map<String, String>> recordSale(int quantitySold) async {

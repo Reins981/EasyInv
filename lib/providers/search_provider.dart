@@ -23,6 +23,27 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void getItemsSortedByQuantitySold({String order="descending"}) async {
+    List<Item> items = await firestoreService.getItemsSortedByQuantitySold(order: order);
+    _items = items;
+    _filterItems();
+    notifyListeners();
+  }
+
+  void getItemsSortedByProfit({String order="descending"}) async {
+    List<Item> items = await firestoreService.getItemsSortedByProfit(order: order);
+    _items = items;
+    _filterItems();
+    notifyListeners();
+  }
+
+  void getItemsSortedByName({String order="ascending"}) async {
+    List<Item> items = await firestoreService.getItemsSortedByName(order: order);
+    _items = items;
+    _filterItems();
+    notifyListeners();
+  }
+
   Future<void> _fetchItems() async {
     try {
       // Listen to the stream of items from Firestore

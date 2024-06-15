@@ -20,6 +20,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
   late final AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
   late Animation<double> _animation;
+  String trendOrder = 'descending';
+  String profitOrder = 'descending';
+  String nameOrder = 'ascending';
 
   @override
   void initState() {
@@ -126,7 +129,19 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
   Widget _buildSortColumn(String title) {
     return GestureDetector(
       onTap: () {
-        // Implement sorting logic based on the column tapped
+        title == 'Trending'
+            ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByQuantitySold(order: trendOrder)
+            : title == 'Top Profits'
+            ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByProfit(order: "descending")
+            : Provider.of<SearchProvider>(context, listen: false).getItemsSortedByName(order: "ascending");
+
+        if (title == 'Trending') {
+          trendOrder = trendOrder == 'descending' ? 'ascending' : 'descending';
+        } else if (title == 'Top Profits') {
+          profitOrder = profitOrder == 'descending' ? 'ascending' : 'descending';
+        } else {
+          nameOrder = nameOrder == 'ascending' ? 'descending' : 'ascending';
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
