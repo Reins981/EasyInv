@@ -5,6 +5,7 @@ import '../services/firestore_service.dart';
 import '../trading/charts.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
+import 'package:intl/intl.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   final Item item;
@@ -199,6 +200,7 @@ class ItemDetailScreen extends StatefulWidget {
                 ],
               ),
               const SizedBox(height: 20),
+              _buildHeader(_item),
               Container(
                 height: 200,
                 width: double.infinity,
@@ -340,64 +342,150 @@ class ItemDetailScreen extends StatefulWidget {
       );
     }
 
-    Widget _buildProfitButton(dynamic profit) {
-      return ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.transparent,
-          backgroundColor: Colors.transparent,// Ensure the button itself is transparent to show the gradient
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-          shadowColor: Colors.transparent, // Remove any shadow to maintain the gradient appearance
-          elevation: 0, // Removes any elevation/shadow effect
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.purpleAccent, AppColors.pink],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+    Widget _buildHeader(Item item) {
+      // Get the current month and year
+      String currentMonth = DateFormat('MMMM').format(DateTime.now());
+      String currentYear = DateFormat('yyyy').format(DateTime.now());
+
+      // Get the total number of quantity for this item being sold
+      int totalQuantitySold = item.totalQuantitySold;
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.pink[50], // Example background color
+              borderRadius: BorderRadius.circular(8),
             ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Container(
-            constraints: BoxConstraints(minHeight: 36.0), // Adjust the minimum height as needed
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: ScaleTransition(
-                    scale: _animation,
-                    child: const Icon(
-                      Icons.attach_money,
-                      color: Colors.white,
-                      size: 14.0,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-                      '$profit',
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontFamily: 'Roboto',
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              '$currentMonth $currentYear',
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.pink,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-        ),
+          const SizedBox(width: 8), // Adjust spacing between texts as needed
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.pink[50], // Example background color
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Total Sold: $totalQuantitySold',
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.pink,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       );
     }
-}
+
+    Widget _buildProfitButton(dynamic profit) {
+      return FutureBuilder<bool>(
+        future: widget.firestoreService.salesDataExistForItem(_item.id!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return ElevatedButton(
+              onPressed: () {}, // You can provide a placeholder onPressed function if needed
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                shadowColor: Colors.transparent,
+                elevation: 0,
+              ),
+              child: const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return ElevatedButton(
+              onPressed: () {}, // You can provide a placeholder onPressed function if needed
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                shadowColor: Colors.transparent,
+                elevation: 0,
+              ),
+              child: Icon(Icons.error_outline, color: Colors.red),
+            );
+          } else {
+            bool success = snapshot.data ?? false; // Default to false if snapshot.data is null
+            profit = success ? profit : 0;
+
+            return ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.transparent,
+                backgroundColor: Colors.transparent,// Ensure the button itself is transparent to show the gradient
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                shadowColor: Colors.transparent, // Remove any shadow to maintain the gradient appearance
+                elevation: 0, // Removes any elevation/shadow effect
+              ),
+              child: Ink(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.purpleAccent, AppColors.pink],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Container(
+                  constraints: BoxConstraints(minHeight: 36.0), // Adjust the minimum height as needed
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: ScaleTransition(
+                          scale: _animation,
+                          child: const Icon(
+                            Icons.attach_money,
+                            color: Colors.white,
+                            size: 14.0,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            '$profit',
+                            style: const TextStyle(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Roboto',
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        },
+      );
+    }
+  }
 
 

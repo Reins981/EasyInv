@@ -2,8 +2,41 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/item.dart';
 
+// Cron Job to cleanup old sales data
+Future<void> cleanupOldSalesData() async {
+  print("Cleaning up old sales data...");
+  DateTime currentTime = DateTime.now();
+  int currentMonth = currentTime.month;
+  int currentYear = currentTime.year;
+
+  // Calculate the start date of the current month
+  DateTime startOfCurrentMonth = DateTime(currentYear, currentMonth, 1);
+
+  // Calculate the start date of the previous month
+  DateTime startOfPreviousMonth = currentMonth == 1
+      ? DateTime(currentYear - 1, 12, 1)
+      : DateTime(currentYear, currentMonth - 1, 1);
+
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('sales')
+      .where('date', isLessThan: startOfCurrentMonth)
+      .where('date', isGreaterThanOrEqualTo: startOfPreviousMonth)
+      .get();
+
+  WriteBatch batch = FirebaseFirestore.instance.batch();
+
+  querySnapshot.docs.forEach((doc) {
+    print("Deleting Sales Data for Document: ${doc.id} with date: ${doc['date']}");
+    batch.delete(doc.reference);
+  });
+
+  await batch.commit();
+}
+
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  WriteBatch get batch => _firestore.batch();
 
   Stream<List<Item>> getAllItems() {
     // Method to get a stream of all items from Firestore
@@ -11,6 +44,27 @@ class FirestoreService {
         .map((doc) => Item.fromFirestore(doc.data(), doc))
         .toList());
 
+  }
+
+  Future<bool> salesDataExistForItem(String itemId) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('sales')
+        .where('itemId', isEqualTo: itemId)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+  Future<void> deleteSalesItems(String itemId) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('sales')
+        .where('itemId', isEqualTo: itemId)
+        .get();
+
+    querySnapshot.docs.forEach((doc) {
+      print("Deleting Sales Data for Document: ${doc.id}");
+      doc.reference.delete();
+    });
   }
 
   Future<Map<String, String>> updateItem(Item item, String itemId) async {
@@ -60,7 +114,8 @@ class FirestoreService {
     bool isError = false;
 
     try {
-      await FirebaseFirestore.instance.collection('items').doc(itemId).delete();
+      await _firestore.collection('items').doc(itemId).delete();
+      await deleteSalesItems(itemId);
     } catch (e) {
       errorMessage = '$e';
       isError = true;
@@ -117,6 +172,7 @@ class FirestoreService {
             sellingPrice: data['sellingPrice'],
             quantity: data['quantity'], // Retrieve quantity from the document
             profit: data['profit'],
+            totalQuantitySold: data['totalQuantitySold'],
           ),
           'itemId': querySnapshot.docs.first.id, // Retrieve the document ID
           'status': 'Success'
@@ -279,4 +335,19 @@ class FirestoreService {
     return itemList;
   }
 
+  Future<QuerySnapshot> getOneMonthData(String itemId) async {
+    // Add your data points here
+    // Function to get one month data from firestore
+    DateTime currentTime = DateTime.now();
+    DateTime oneMonthAgo = currentTime.subtract(const Duration(days: 30));
+    // Query Firestore for sales data of the specific item in the last 30 days
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('sales')
+        .where('itemId', isEqualTo: itemId)
+        .where('date', isGreaterThanOrEqualTo: oneMonthAgo)
+        .where('date', isLessThanOrEqualTo: currentTime)
+        .get();
+
+    return querySnapshot;
+  }
 }

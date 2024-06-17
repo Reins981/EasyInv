@@ -6,6 +6,7 @@ import '../models/item.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
 
+
 class TradingChart extends StatefulWidget {
   final Item item;
   final String itemId;
@@ -131,20 +132,11 @@ class _TradingChartState extends State<TradingChart> {
   // Function to get one month data
   Future<List<SalesData>> _getOneMonthData(String itemId) async {
     // This function should return data for one month
-    // For example, you can return the data for the last 30 days
+    // Return the data for the last 30 days
     List<SalesData> data = [];
-    // Add your data points here
-    // Function to get one month data from firestore
-    DateTime currentTime = DateTime.now();
-    DateTime oneMonthAgo = currentTime.subtract(const Duration(days: 30));
-
     // Query Firestore for sales data of the specific item in the last 30 days
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('sales')
-        .where('itemId', isEqualTo: itemId)
-        .where('date', isGreaterThanOrEqualTo: oneMonthAgo)
-        .where('date', isLessThanOrEqualTo: currentTime)
-        .get();
+    QuerySnapshot querySnapshot = await widget.firestoreService.getOneMonthData(itemId);
+
 
     Map<int, dynamic> dailySales = {};
 
@@ -167,6 +159,7 @@ class _TradingChartState extends State<TradingChart> {
 
     return data;
   }
+
 }
 
 class SalesData {

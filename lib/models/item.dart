@@ -14,6 +14,7 @@ class Item {
   int quantity;
   dynamic profit = 0;
   String? trend;
+  int totalQuantitySold = 0;
 
   Item({
     this.id,
@@ -28,6 +29,7 @@ class Item {
     required this.quantity,
     required this.profit,
     this.trend,
+    required this.totalQuantitySold,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +46,7 @@ class Item {
       'quantity': quantity,
       'profit': profit,
       if (trend != null) 'trend': trend,
+      'totalQuantitySold': totalQuantitySold,
     };
   }
 
@@ -63,6 +66,7 @@ class Item {
         quantity: data['quantity'],
         profit: data['profit'],
         trend: data['trend'],
+        totalQuantitySold: data['totalQuantitySold'] ?? 0,
       );
     } else if (secondParam is QueryDocumentSnapshot) {
       // Create item when secondParam is a QueryDocumentSnapshot
@@ -79,6 +83,7 @@ class Item {
         quantity: data['quantity'],
         profit: data['profit'],
         trend: data['trend'],
+        totalQuantitySold: data['totalQuantitySold'] ?? 0,
       );
     } else {
       throw ArgumentError('Second parameter must be either a String or a QueryDocumentSnapshot');
@@ -90,12 +95,14 @@ class Item {
     final saleDate = Timestamp.now();
 
     try {
+      totalQuantitySold = totalQuantitySold + quantitySold;
       quantity = quantity - quantitySold;
       profit = profit + sales;
 
       await FirebaseFirestore.instance.collection('items').doc(id).update({
         'quantity': quantity,
         'profit': profit,
+        'totalQuantitySold': totalQuantitySold,
       });
 
       await FirebaseFirestore.instance.collection('sales').add({

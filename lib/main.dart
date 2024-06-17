@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'screens/dashboard_screen.dart';
 import 'utils/colors.dart';
+import 'services/firestore_service.dart';
 
 
 class AppLifecycleObserver with WidgetsBindingObserver {
@@ -17,6 +18,7 @@ class AppLifecycleObserver with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       print('App is about to enter state $state');
+      cleanupOldSalesData();
     }
   }
 }
@@ -25,7 +27,10 @@ AppLifecycleObserver observer = AppLifecycleObserver();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding.instance.addObserver(observer);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Execute cleanupOldSalesData on app start
+  await cleanupOldSalesData();
   runApp(const MyApp());
 }
 

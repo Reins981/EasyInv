@@ -498,9 +498,15 @@ class Helper {
                   onItemSale(item);  // Call the callback with the updated item
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
-                    showSnackBar(
+                    item.sellingPrice > item.buyingPrice ? showSnackBar(
                         'Item sale success! New profit: ${item.profit}!',
-                        "Success", scaffoldMessenger);
+                        "Success", scaffoldMessenger
+                    )
+                        : showSnackBar(
+                        'Item sale success but you were selling with a loss!',
+                        "Success",
+                        scaffoldMessenger
+                    );
                   }
                 }
               },
