@@ -61,6 +61,20 @@ class ItemDetailScreen extends StatefulWidget {
       );
     }
 
+    void _updatePrice(String label) {
+      widget.helper.handleItemUpdatePriceWithDialog(
+          context,
+          _item,
+          label,
+          widget.firestoreService,
+              (updatedItem) {
+            setState(() {
+              _item = updatedItem;
+            });
+          }
+      );
+    }
+
     void _deleteItem() async {
       bool result = await widget.helper.handleItemDeleteWithDialog(
           context,
@@ -138,7 +152,33 @@ class ItemDetailScreen extends StatefulWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildTotalProfitWidget(context, _item.profit),
+                  Expanded(
+                      child: _buildProfitButton(_item.profit)
+                  ),
+                  Expanded(
+                    child: Tooltip(
+                      message: 'Change Buying Price',
+                      child: _buildPriceButton(
+                        _item.buyingPrice.toString(),
+                        "Buying Price",
+                        Colors.red,
+                        Colors.red,
+                            (price) => _updatePrice(price),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Tooltip(
+                      message: 'Change Selling Price',
+                      child: _buildPriceButton(
+                        _item.sellingPrice.toString(),
+                        "Selling Price",
+                        Colors.green,
+                        Colors.green,
+                            (price) => _updatePrice(price),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -166,7 +206,12 @@ class ItemDetailScreen extends StatefulWidget {
                   color: AppColors.rosa.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: TradingChart(item: _item, itemId: _item.id!, firestoreService: widget.firestoreService),
+                child: TradingChart(
+                    key: ValueKey(_item.quantity),
+                    item: _item,
+                    itemId: _item.id!,
+                    firestoreService: widget.firestoreService
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -228,6 +273,30 @@ class ItemDetailScreen extends StatefulWidget {
       );
     }
 
+    Widget _buildPriceButton(dynamic price, String label, Color foregroundColor, Color backgroundColor, Function(dynamic) onPressed) {
+      return ElevatedButton(
+        onPressed: () => onPressed(label),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: foregroundColor,
+          backgroundColor: backgroundColor.withOpacity(0.2), // Foreground (text) color
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          elevation: 0
+        ),
+        child: Center(
+          child: Text(
+            '\$$price',
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              color: foregroundColor,
+            ),
+          ),
+        ),
+      );
+    }
+
     Widget _buildCombinedDetailCard(List<Map<String, String>> details) {
       return Card(
         elevation: 5,
@@ -271,57 +340,61 @@ class ItemDetailScreen extends StatefulWidget {
       );
     }
 
-    Widget _buildTotalProfitWidget(BuildContext context, double totalProfit) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 16.0),
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.purpleAccent, Colors.pink],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 6.0,
-              offset: Offset(0, 2),
-            ),
-          ],
+    Widget _buildProfitButton(dynamic profit) {
+      return ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.transparent,
+          backgroundColor: Colors.transparent,// Ensure the button itself is transparent to show the gradient
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          shadowColor: Colors.transparent, // Remove any shadow to maintain the gradient appearance
+          elevation: 0, // Removes any elevation/shadow effect
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Colors.purpleAccent, AppColors.pink],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Container(
+            constraints: BoxConstraints(minHeight: 36.0), // Adjust the minimum height as needed
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ScaleTransition(
-                  scale: _animation, // Assuming _animation is defined in your State class
-                  child: const Icon(
-                    Icons.attach_money,
-                    color: Colors.white,
-                    size: 20.0,
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ScaleTransition(
+                    scale: _animation,
+                    child: const Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                      size: 14.0,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\$$totalProfit',
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+                      '$profit',
                       style: const TextStyle(
-                        fontSize: 20.0,
+                        fontSize: 14.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         fontFamily: 'Roboto',
                         letterSpacing: 1.0,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       );
     }

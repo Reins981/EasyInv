@@ -180,15 +180,15 @@ class FirestoreService {
     }
   }
 
-  Future<List<Item>> getItemsSortedByQuantitySold({String order="descending"}) async {
+  Future<List<Item>> getItemsSortedByQuantitySold({String order = "descending"}) async {
     List<Item> itemList = [];
     try {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('sales')
-          .get();
+      // Fetch all sales data
+      QuerySnapshot salesSnapshot = await _firestore.collection('sales').get();
 
+      // Calculate the total quantity sold for each item
       Map<String, int> quantitySoldMap = {};
-      querySnapshot.docs.forEach((doc) {
+      for (var doc in salesSnapshot.docs) {
         String itemId = doc['itemId'] as String;
         int quantitySold = doc['quantitySold'] as int;
 
@@ -197,44 +197,47 @@ class FirestoreService {
         } else {
           quantitySoldMap[itemId] = quantitySold;
         }
-      });
-
-      List<MapEntry<String, int>> sortedItems = [];
-      if (order == "ascending") {
-        // Sort the items by quantity sold in ascending order
-        sortedItems = quantitySoldMap.entries.toList()
-          ..sort((a, b) => a.value.compareTo(b.value));
-      } else {
-        // Sort the items by quantity sold in descending order
-        sortedItems = quantitySoldMap.entries
-            .toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
       }
 
-      for (var entry in sortedItems) {
-        String itemId = entry.key;
+      // Sort items based on quantity sold
+      List<MapEntry<String, int>> sortedEntries = quantitySoldMap.entries.toList()
+        ..sort((a, b) => order == "ascending" ? a.value.compareTo(b.value) : b.value.compareTo(a.value));
 
-        // Fetch item from Firestore using itemId
-        DocumentSnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('items')
-            .doc(itemId)
-            .get();
+      // Fetch all items in sorted order using batch retrieval
+      List<String> sortedItemIds = sortedEntries.map((e) => e.key).toList();
 
-        if (querySnapshot.exists) {
-          // Convert Firestore document to Item object
-          Item item = Item.fromFirestore(querySnapshot.data() as Map<String, dynamic>, itemId);
-          itemList.add(item);
-        } else {
-          print('Item with ID $itemId does not exist in the items collection.');
+      Map<String, Item> itemsMap = {};
+      for (int i = 0; i < sortedItemIds.length; i += 10) {
+        List<String> batchIds = sortedItemIds.sublist(i, i + 10 > sortedItemIds.length ? sortedItemIds.length : i + 10);
+        QuerySnapshot itemSnapshot = await _firestore.collection('items').where(FieldPath.documentId, whereIn: batchIds).get();
+        for (var doc in itemSnapshot.docs) {
+          Item item = Item.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+          itemsMap[doc.id] = item;
         }
       }
 
+      // Reorder the items based on sortedItemIds
+      for(var itemId in sortedItemIds) {
+        if (itemsMap.containsKey(itemId)) {
+          itemList.add(itemsMap[itemId]!);
+        }
+      }
+
+      // Fetch remaining items that do not have sales data
+      QuerySnapshot remainingItemsSnapshot = await _firestore.collection('items').get();
+      for (var doc in remainingItemsSnapshot.docs) {
+        if (!quantitySoldMap.containsKey(doc.id)) {
+          Item item = Item.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+          itemList.add(item);
+        }
+      }
     } catch (e) {
       print('Failed to get items sorted by quantity sold: $e');
     }
 
     return itemList;
   }
+
 
   Future<List<Item>> getItemsSortedByProfit({String order="descending"}) async {
     List<Item> itemList = [];

@@ -20,7 +20,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
   late final AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
   late Animation<double> _animation;
-  String trendOrder = 'descending';
+  String trendOrder = 'ascending';
   String profitOrder = 'descending';
   String nameOrder = 'ascending';
 
@@ -203,6 +203,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TradingChart(
+                          key: ValueKey(items[index].id),
                           item: items[index],
                           itemId: items[index].id!,
                           firestoreService: FirestoreService()

@@ -155,6 +155,138 @@ class Helper {
     await firestoreService.deleteItem(item.id!);
   }
 
+  void handleItemUpdatePriceWithDialog(
+      BuildContext context,
+      Item item,
+      String label,
+      FirestoreService firestoreService,
+      Function(Item)? onItemUpdate) {
+    TextEditingController priceController = TextEditingController();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.pink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          title: Text(
+              'Update $label',
+              style: const TextStyle(color: AppColors.rosa)
+          ),
+          // Change text color to rosa
+          content: TextField(
+            controller: priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'New $label',
+              labelStyle: const TextStyle(color: AppColors.pink),
+              // Customize label text color
+              fillColor: AppColors.rosa,
+              // Fill color of the text field
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border when focused
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border for error
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide.none, // No border for error when focused
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Update quantity in Firebase
+                String priceText = priceController.text.trim();
+                if (priceText.isEmpty || priceText == '0') {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        '$label cannot be empty or zero. Please enter a valid number',
+                        "Error", scaffoldMessenger);
+                  }
+                  return;
+                }
+
+                int? newPrice = int.tryParse(priceText);
+                if (newPrice == null) {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        'Invalid $label. Please enter a valid number.',
+                        "Error", scaffoldMessenger);
+                  }
+                  return;
+                }
+
+                if (label == 'Buying Price') {
+                  item.buyingPrice = newPrice;
+                } else {
+                  item.sellingPrice = newPrice;
+                }
+
+                Map<String, String> result = await firestoreService.updateItem(
+                    item, item.id!);
+                if (result['status'] == 'Error') {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        "Updating $label failed! ${result['message']}",
+                        "Error", scaffoldMessenger);
+                  }
+                } else {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    if (label == 'Buying Price') {
+                      showSnackBar(
+                          '$label successfully updated to ${item.buyingPrice}!',
+                          "Success", scaffoldMessenger);
+                    } else {
+                      showSnackBar(
+                          '$label successfully updated to ${item.sellingPrice}!',
+                          "Success", scaffoldMessenger);
+                    }
+                  }
+                  if (onItemUpdate != null) {
+                    onItemUpdate(
+                        item); // Call the callback with the updated item
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.rosa, // Text color
+              ),
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void handleItemUpdateQuantityWithDialog(BuildContext context, Item item, FirestoreService firestoreService, Function(Item)? onItemUpdate) {
     TextEditingController quantityController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);

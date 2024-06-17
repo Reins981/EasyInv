@@ -31,6 +31,18 @@ class _TradingChartState extends State<TradingChart> {
   @override
   void initState() {
     super.initState();
+    _calculateSalesData();
+  }
+
+  @override
+  void didUpdateWidget(covariant TradingChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != widget.item) {
+      _calculateSalesData();
+    }
+  }
+
+  void _calculateSalesData() {
     futureData = _getOneMonthData(widget.itemId);
     futureData.then((data) {
       upsAndDowns = _calculateNumberOfUpsAndDowns(data);
