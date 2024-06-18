@@ -148,7 +148,7 @@ class _LoadingPageState extends State<LoadingPage>
       body: Center(
         child: ScaleTransition(
           scale: _animation,
-          child: const FlutterLogo(size: 150),
+          child: Image.asset('assets/logo.jpg'),
         ),
       ),
     );
