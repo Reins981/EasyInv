@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,13 +46,34 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
     super.dispose();
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Asset Management'),
+        title: Text(
+          'Gestión de Activos',
+          style: GoogleFonts.lato(
+            fontSize: 20,
+            color: Colors.white,
+            letterSpacing: 1.0,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: AppColors.rosa,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _handleLogout(context);
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: Consumer<SearchProvider>(
         builder: (context, searchProvider, child) {
@@ -94,7 +116,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
               style: const TextStyle(color: Colors.black),
               cursorColor: AppColors.pink,
               decoration: InputDecoration(
-                labelText: 'Search by Vendor, Name, or Category',
+                labelText: 'Buscar por Proveedor, Nombre o Categoría',
                 labelStyle: const TextStyle(color: AppColors.pink),
                 prefixIcon: const Icon(Icons.search, color: Colors.white),
                 border: InputBorder.none,
@@ -119,8 +141,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildSortColumn('Trending'),
-        _buildSortColumn('Top Profits'),
+        _buildSortColumn('Tendencias'),
+        _buildSortColumn('Ganancias Principales'),
         _buildSortColumn('A-Z'),
       ],
     );
@@ -129,15 +151,15 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
   Widget _buildSortColumn(String title) {
     return GestureDetector(
       onTap: () {
-        title == 'Trending'
+        title == 'Tendencias'
             ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByQuantitySold(order: trendOrder)
-            : title == 'Top Profits'
+            : title == 'Ganancias Principales'
             ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByProfit(order: profitOrder)
             : Provider.of<SearchProvider>(context, listen: false).getItemsSortedByName(order: nameOrder);
 
-        if (title == 'Trending') {
+        if (title == 'Tendencias') {
           trendOrder = trendOrder == 'descending' ? 'ascending' : 'descending';
-        } else if (title == 'Top Profits') {
+        } else if (title == 'Ganancias Principales') {
           profitOrder = profitOrder == 'descending' ? 'ascending' : 'descending';
         } else {
           nameOrder = nameOrder == 'ascending' ? 'descending' : 'ascending';
@@ -191,7 +213,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                       _buildSubtitle(items[index].vendor),
                       _buildSubtitle(items[index].description),
                       _buildSubtitle(items[index].color),
-                      _buildSubtitle(items[index].size ?? 'N/A'),
+                      _buildSubtitle(items[index].size ?? 'N/D'),
                       _buildSubtitle("(${items[index].quantity.toString()})", bold: true),
                     ],
                   ),
@@ -306,12 +328,11 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
                 '$profit',
-                style: const TextStyle(
-                  fontSize: 14.0,
+                style: GoogleFonts.lato(
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Roboto',
                   letterSpacing: 1.0,
+                  color: Colors.white,
                 ),
               ),
             ),

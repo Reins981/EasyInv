@@ -1,4 +1,5 @@
 import 'package:easy_inv/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,51 @@ import '../utils/colors.dart';
 
 
 class Helper {
+
+  Future<Map<String, dynamic>> getCurrentUserDetails({bool forceRefresh=false}) async {
+
+    try {
+      IdTokenResult idTokenResult = await getIdTokenResult(null, forceRefresh: forceRefresh);
+
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
+
+      final userUid = user!.uid;
+      final userEmail = user.email;
+      final userName = user.displayName;
+
+      final token = idTokenResult.token;
+
+      return {
+        'userUid': userUid,
+        'userEmail': userEmail,
+        'userName': userName,
+        'token': token,
+      };
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<IdTokenResult> getIdTokenResult(User? thisUser, {bool forceRefresh=false}) async {
+    User? user = thisUser ?? FirebaseAuth.instance.currentUser;
+    if (user == null) {
+
+      String errorMessage = 'Usuario no ha iniciado sesión';
+      throw Exception(errorMessage);
+    }
+
+    if (forceRefresh == true) {
+      try {
+        await user.reload();
+        user = FirebaseAuth.instance.currentUser;
+      } catch (e) {
+        throw Exception(e);
+      }
+    }
+
+    return await user!.getIdTokenResult();
+  }
 
   double calculateProfit(double buyingPrice, double sellingPrice, int quantity) {
     return sellingPrice > buyingPrice
@@ -73,17 +119,19 @@ class Helper {
           ),
           title: Text(
             title,
-            style: const TextStyle(
+            style: GoogleFonts.lato(
               fontSize: 20,
-              color: AppColors.white,
               fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.0,
             ),
           ),
           content: Text(
             content,
-            style: const TextStyle(
+            style: GoogleFonts.lato(
               fontSize: 16,
-              color: AppColors.white,
+              color: Colors.white,
+              letterSpacing: 1.0,
             ),
           ),
           actions: <Widget>[
@@ -91,11 +139,12 @@ class Helper {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text(
-                'Close',
-                style: TextStyle(
+              child: Text(
+                'Cerrar',
+                style: GoogleFonts.lato(
                   fontSize: 16,
                   color: AppColors.pink,
+                  letterSpacing: 1.0,
                 ),
               ),
             ),
@@ -115,8 +164,23 @@ class Helper {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this item?'),
+          title: Text(
+            'Confirmar eliminación',
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.0,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to delete this item?',
+            style: GoogleFonts.lato(
+              fontSize: 16,
+              color: Colors.white,
+              letterSpacing: 1.0,
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -126,8 +190,13 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text(
+              child: Text(
                 'No',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
               ),
             ),
             TextButton(
@@ -140,8 +209,13 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text(
+              child: Text(
                 'Yes',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
               ),
             ),
           ],
@@ -173,16 +247,25 @@ class Helper {
             borderRadius: BorderRadius.circular(30.0),
           ),
           title: Text(
-              'Update $label',
-              style: const TextStyle(color: AppColors.rosa)
+            'Actualizar $label',
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.rosa,
+              letterSpacing: 1.0,
+            ),
           ),
           // Change text color to rosa
           content: TextField(
             controller: priceController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'New $label',
-              labelStyle: const TextStyle(color: AppColors.pink),
+              labelText: '$label nuevo',
+              labelStyle: GoogleFonts.lato(
+                fontSize: 16,
+                color: Colors.pink,
+                letterSpacing: 1.0,
+              ),
               // Customize label text color
               fillColor: AppColors.rosa,
               // Fill color of the text field
@@ -214,7 +297,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -224,7 +314,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        '$label cannot be empty or zero. Please enter a valid number',
+                        '$label no puede estar vacío ni ser cero. Por favor, ingrese un número válido.',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -235,7 +325,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Invalid $label. Please enter a valid number.',
+                        '$label inválido. Por favor, ingrese un número válido.',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -253,7 +343,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        "Updating $label failed! ${result['message']}",
+                        "Actualizando $label falló! ${result['message']}",
                         "Error", scaffoldMessenger);
                   }
                 } else {
@@ -261,11 +351,11 @@ class Helper {
                   if (scaffoldMessenger.mounted) {
                     if (label == 'Buying Price') {
                       showSnackBar(
-                          '$label successfully updated to ${item.buyingPrice}!',
+                          '$label actualizado correctamente a ${item.buyingPrice}!',
                           "Success", scaffoldMessenger);
                     } else {
                       showSnackBar(
-                          '$label successfully updated to ${item.sellingPrice}!',
+                          '$label actualizado correctamente a ${item.sellingPrice}!',
                           "Success", scaffoldMessenger);
                     }
                   }
@@ -279,7 +369,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Update'),
+              child: Text(
+                'Actualización',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
           ],
         );
@@ -299,16 +396,25 @@ class Helper {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
-          title: const Text(
-              'Update Quantity',
-              style: TextStyle(color: AppColors.rosa)
+          title: Text(
+            'Actualizar cantidad',
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.rosa,
+              letterSpacing: 1.0,
+            ),
           ), // Change text color to rosa
           content: TextField(
             controller: quantityController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'Add Quantity',
-              labelStyle: const TextStyle(color: AppColors.pink), // Customize label text color
+              labelText: 'Agregar cantidad',
+              labelStyle:  GoogleFonts.lato(
+                fontSize: 16,
+                color: Colors.pink,
+                letterSpacing: 1.0,
+              ), // Customize label text color
               fillColor: AppColors.rosa, // Fill color of the text field
               filled: true,
               border: OutlineInputBorder(
@@ -338,7 +444,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancelar',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -348,7 +461,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Quantity cannot be empty or zero. Please enter a valid number',
+                        'No se puede dejar vacío ni poner cero en la cantidad. Por favor, introduzca un número válido.',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -359,7 +472,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Invalid quantity. Please enter a valid number.',
+                        'Cantidad no válida. Por favor, ingrese un número válido.',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -370,14 +483,14 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        "Updating Quantity failed! ${result['message']}",
+                        "¡Fallo al actualizar la cantidad! ${result['message']}",
                         "Error", scaffoldMessenger);
                   }
                 } else {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Quantity successfully updated to ${item.quantity}!',
+                        'Cantidad actualizada correctamente a ${item.quantity}!',
                         "Success", scaffoldMessenger);
                   }
                   if (onItemUpdate != null) {
@@ -389,7 +502,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Update'),
+              child: Text(
+                'Actualización',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
           ],
         );
@@ -409,16 +529,25 @@ class Helper {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
-          title: const Text(
-              'Item sale',
-              style: TextStyle(color: AppColors.rosa)
+          title: Text(
+            'Venta del artículo',
+            style: GoogleFonts.lato(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.rosa,
+              letterSpacing: 1.0,
+            ),
           ), // Change text color to rosa
           content: TextField(
             controller: saleController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'How many items have been sold?',
-              labelStyle: const TextStyle(color: AppColors.pink), // Customize label text color
+              labelText: '¿Cuántos artículos se han vendido?',
+              labelStyle: GoogleFonts.lato(
+                fontSize: 16,
+                color: AppColors.pink,
+                letterSpacing: 1.0,
+              ), // Customize label text color
               fillColor: AppColors.rosa, // Fill color of the text field
               filled: true,
               border: OutlineInputBorder(
@@ -448,7 +577,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -458,7 +594,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Number of items sold cannot be empty or zero. Please enter a valid number',
+                        'El número de artículos vendidos no puede estar vacío ni ser cero. Por favor, ingrese un número válido.',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -469,7 +605,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        'Invalid sale. Please enter a valid number.',
+                        'Venta inválida. Por favor, ingrese un número válido..',
                         "Error", scaffoldMessenger);
                   }
                   return;
@@ -478,7 +614,7 @@ class Helper {
                     Navigator.of(context).pop(); // Close the dialog
                     if (scaffoldMessenger.mounted) {
                       showSnackBar(
-                          'Number of items sold cannot be more than the available quantity ${item.quantity}',
+                          'No se pueden vender más artículos de los ${item.quantity} disponibles.',
                           "Error", scaffoldMessenger);
                     }
                     return;
@@ -491,7 +627,7 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     showSnackBar(
-                        "Item sale failed! ${resultSale['message']}",
+                        "¡Fallo en la venta del artículo! ${resultSale['message']}",
                         "Error", scaffoldMessenger);
                   }
                 } else {
@@ -499,11 +635,11 @@ class Helper {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {
                     item.sellingPrice > item.buyingPrice ? showSnackBar(
-                        'Item sale success! New profit: ${item.profit}!',
+                        '¡Venta del artículo exitosa! Nuevo beneficio: ${item.profit}!',
                         "Success", scaffoldMessenger
                     )
                         : showSnackBar(
-                        'Item sale success but you were selling with a loss!',
+                        '¡Venta del artículo exitosa pero estabas vendiendo con pérdida!',
                         "Success",
                         scaffoldMessenger
                     );
@@ -514,7 +650,14 @@ class Helper {
                 foregroundColor: Colors.white,
                 backgroundColor: AppColors.rosa, // Text color
               ),
-              child: const Text('Sell'),
+              child: Text(
+                'Sell',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppColors.pink,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
           ],
         );

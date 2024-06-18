@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/firestore_service.dart';
-import '../utils/helpers.dart';
 
 class SearchProvider with ChangeNotifier {
   final FirestoreService firestoreService;

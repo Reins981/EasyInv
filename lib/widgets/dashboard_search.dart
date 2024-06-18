@@ -69,7 +69,7 @@ import '../utils/helpers.dart';
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Low Stock Items',
+                'Artículos con bajo inventario',
                 style: GoogleFonts.lato(
                   fontSize: 20,
                   color: Colors.white,
@@ -92,7 +92,7 @@ import '../utils/helpers.dart';
                         style: const TextStyle(color: Colors.black), // Set text color
                         cursorColor: AppColors.pink,
                         decoration: InputDecoration(
-                          labelText: 'Search by Vendor, Name, or Category',
+                          labelText: 'Buscar por proveedor, nombre o categoría',
                           labelStyle: const TextStyle(color: AppColors.pink),
                           prefixIcon: const Icon(Icons.search, color: Colors.white), // Set icon color
                           border: InputBorder.none, // Remove border
@@ -115,10 +115,13 @@ import '../utils/helpers.dart';
               ),
               const SizedBox(height: 12.0),
               if (resultItems.isEmpty)
-                const Center(
+                Center(
                   child: Text(
-                    'No low stock items.',
-                    style: TextStyle(color: Colors.white),
+                    'No hay artículos en bajo inventario (menor que 5).',
+                    style: GoogleFonts.lato(
+                      color: Colors.white,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 )
               else
@@ -162,11 +165,12 @@ import '../utils/helpers.dart';
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(
+                    child: Text(
+                      'Cerrar',
+                      style: GoogleFonts.lato(
                         fontSize: 16,
                         color: AppColors.pink,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
@@ -196,10 +200,10 @@ import '../utils/helpers.dart';
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDescriptionText('Vendor:', item.vendor),
-                      _buildDescriptionText('Description:', item.description),
+                      _buildDescriptionText('Proveedor:', item.vendor),
+                      _buildDescriptionText('Descripción:', item.description),
                       _buildDescriptionText('Color:', item.color),
-                      _buildDescriptionText('Size:', item.size ?? 'N/A'),
+                      _buildDescriptionText('Talla:', item.size ?? 'N/D'),
                       // Add more fields as needed
                     ],
                   ),
@@ -292,10 +296,10 @@ import '../utils/helpers.dart';
     Widget _buildDescriptionText(String label, String value) {
       return Container(
         decoration: BoxDecoration(
-            color: label == 'Vendor:' ? AppColors.rosa : AppColors.pink,
+            color: label == 'Proveedor:' ? AppColors.rosa : AppColors.pink,
             borderRadius: BorderRadius.circular(8.0),
             border: Border.all(
-              color: label == 'Vendor:' ? AppColors.rosa : AppColors.rosa,
+              color: label == 'Proveedor:' ? AppColors.rosa : AppColors.rosa,
               width: 0.5, // Border width
             )
         ),
@@ -307,7 +311,7 @@ import '../utils/helpers.dart';
             '$label $value',
             style: GoogleFonts.lato(
               fontSize: 14,
-              color: label == 'Vendor:' ? Colors.black : Colors.white,
+              color: label == 'Proveedor:' ? Colors.black : Colors.white,
               fontStyle: FontStyle.italic,
               letterSpacing: 1.0,
             ),

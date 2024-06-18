@@ -154,11 +154,14 @@ class ItemDetailScreen extends StatefulWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                      child: _buildProfitButton(_item.profit)
+                      child: Tooltip(
+                        message: 'Beneficio total',
+                        child: _buildProfitButton(_item.profit)
+                    ),
                   ),
                   Expanded(
                     child: Tooltip(
-                      message: 'Change Buying Price',
+                      message: 'Cambiar precio de compra',
                       child: _buildPriceButton(
                         _item.buyingPrice.toString(),
                         "Buying Price",
@@ -170,7 +173,7 @@ class ItemDetailScreen extends StatefulWidget {
                   ),
                   Expanded(
                     child: Tooltip(
-                      message: 'Change Selling Price',
+                      message: 'Cambiar precio de venta',
                       child: _buildPriceButton(
                         _item.sellingPrice.toString(),
                         "Selling Price",
@@ -344,7 +347,7 @@ class ItemDetailScreen extends StatefulWidget {
 
     Widget _buildHeader(Item item) {
       // Get the current month and year
-      String currentMonth = DateFormat('MMMM').format(DateTime.now());
+      String currentMonth = DateFormat('MMMM', 'es').format(DateTime.now());
       String currentYear = DateFormat('yyyy').format(DateTime.now());
 
       // Get the total number of quantity for this item being sold
@@ -377,7 +380,7 @@ class ItemDetailScreen extends StatefulWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Total Sold: $totalQuantitySold',
+              'Total vendido: $totalQuantitySold',
               style: GoogleFonts.lato(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -480,12 +483,11 @@ class ItemDetailScreen extends StatefulWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           child: Text(
                             '$profit',
-                            style: const TextStyle(
-                              fontSize: 14.0,
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Roboto',
                               letterSpacing: 1.0,
+                              color: Colors.white,
                             ),
                           ),
                         ),

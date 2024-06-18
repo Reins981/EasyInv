@@ -1,5 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../formatters/custom.dart';
 import '../models/item.dart';
 import '../services/firestore_service.dart';
@@ -23,16 +24,16 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final TextEditingController _buyingController = TextEditingController();
   final TextEditingController _sellingController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  String _selectedCategory = 'Clothes'; // Track the selected category
+  String _selectedCategory = 'Ropa'; // Track the selected category
   String? _selectedSize = 'S'; // Track the selected size
-  String _selectedColor = 'red'; // Track the selected size
+  String _selectedColor = 'rojo'; // Track the selected size
   bool enterYourOwnSelected = false; // Track if "Enter your own" is selected
 
   // Categories to populate the dropdown menu
   final List<String> categories = [
-    'Clothes',
-    'Electronics',
-    'Stationery',
+    'Ropa',
+    'Electrónica',
+    'Papelería',
     // Add more categories as needed
   ];
 
@@ -46,38 +47,38 @@ class _AddItemScreenState extends State<AddItemScreen> {
   ];
 
   List<String> colorNames = [
-    'red',
-    'green',
-    'blue',
-    'yellow',
-    'orange',
-    'purple',
-    'teal',
-    'cyan',
-    'brown',
-    'amber',
-    'indigo',
-    'lime',
-    'grey',
-    'pink',
-    'black',
-    'white',
-    'silver',
-    'gold',
-    'maroon',
-    'navy',
-    'olive',
-    'fuchsia',
-    'aqua',
-    'violet',
+    'rojo',
+    'verde',
+    'azul',
+    'amarillo',
+    'naranja',
+    'morado',
+    'verde azulado',
+    'cian',
+    'marrón',
+    'ámbar',
+    'índigo',
+    'lima',
+    'gris',
+    'rosa',
+    'negro',
+    'blanco',
+    'plata',
+    'oro',
+    'granate',
+    'azul marino',
+    'oliva',
+    'fucsia',
+    'agua',
+    'violeta',
     'magenta',
-    'turquoise',
+    'turquesa',
     'coral',
-    'salmon',
-    'lavender',
-    'peru',
-    'orchid',
-    'skyBlue',
+    'salmón',
+    'lavanda',
+    'perú',
+    'orquídea',
+    'azul cielo',
   ];
 
   Map<String, List<dynamic>> itemData = {};
@@ -95,6 +96,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
     _fetchItemSuggestions().then((_) {
       setState(() {});
     });
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   Future<void> _fetchItemSuggestions() async {
@@ -130,7 +137,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Item'),
+        title: Text(
+          'Agregar Artículo',
+          style: GoogleFonts.lato(
+            fontSize: 20,
+            color: Colors.white,
+            letterSpacing: 1.0,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: AppColors.rosa,
         leading: IconButton(
@@ -140,6 +154,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
           },
           icon: const Icon(Icons.arrow_back),
         ),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _handleLogout(context);
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       extendBody: true, // Extend body behind the AppBar
       body: Padding(
@@ -152,16 +174,16 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 child: ListView(
                   padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
                   children: [
-                    _buildDropdownField('Item Category', categories),
-                    _buildDropdownFieldWithSuggestions('Item Name', itemNames, _nameController),
-                    _buildDropdownFieldWithSuggestions('Item Description', itemDescriptions, _descriptionController, multiline: true),
-                    _buildDropdownField('Item Color', colorNames, type: 'color'),
+                    _buildDropdownField('Categoría del Artículo', categories),
+                    _buildDropdownFieldWithSuggestions('Nombre del Artículo', itemNames, _nameController),
+                    _buildDropdownFieldWithSuggestions('Descripción del Artículo', itemDescriptions, _descriptionController, multiline: true),
+                    _buildDropdownField('Color del Artículo', colorNames, type: 'color'),
                     // Additional fields based on category
-                    _buildDropdownField('Item Size', sizes, type: 'size'),
-                    _buildDropdownFieldWithSuggestions('Item Vendor', itemVendor, _vendorController),
-                    _buildDropdownFieldWithSuggestions('Item Buying Price', itemBuyingPrice, _buyingController, doubleOnly: true),
-                    _buildDropdownFieldWithSuggestions('Item Selling Price', itemSellingPrice, _sellingController, doubleOnly: true),
-                    _buildDropdownFieldWithSuggestions('Item Quantity', itemQuantity, _quantityController, integerOnly: true),
+                    _buildDropdownField('Tamaño del Artículo', sizes, type: 'size'),
+                    _buildDropdownFieldWithSuggestions('Proveedor del Artículo', itemVendor, _vendorController),
+                    _buildDropdownFieldWithSuggestions('Precio de compra del artículo', itemBuyingPrice, _buyingController, doubleOnly: true),
+                    _buildDropdownFieldWithSuggestions('Precio de venta del artículo', itemSellingPrice, _sellingController, doubleOnly: true),
+                    _buildDropdownFieldWithSuggestions('Cantidad de artículos', itemQuantity, _quantityController, integerOnly: true),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
@@ -172,10 +194,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         backgroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+                        minimumSize: const Size(double.infinity, 60),
                       ),
-                      child: const Text(
-                        'Add',
-                        style: TextStyle(fontSize: 20.0),
+                      child: Text(
+                        'Agregar Artículo',
+                        style: GoogleFonts.lato(
+                          fontSize: 20,
+                          color: AppColors.rosa,
+                          letterSpacing: 1.0,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -195,9 +222,13 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
                       ),
-                      child: const Text(
-                        'Clear Text Fields',
-                        style: TextStyle(fontSize: 20.0),
+                      child: Text(
+                        'Borrar campos de texto',
+                        style: GoogleFonts.lato(
+                          fontSize: 20,
+                          color: AppColors.rosa,
+                          letterSpacing: 1.0,
+                        ),
                       ),
                     ),
                   ],
@@ -212,7 +243,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
   Widget _buildDropdownField(String labelText, List<String> items, {String type='category'}) {
     // Check if the type is 'size' and the selected category is 'Clothes'
-    if (type == 'size' && _selectedCategory != 'Clothes') {
+    if (type == 'size' && _selectedCategory != 'Ropa') {
       // Return an empty container if the category is not 'Clothes'
       _selectedSize = null;
       return Container();
@@ -338,7 +369,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         ),
         validator: (value) {
           if (value?.isEmpty ?? true) {
-            return 'Please enter $labelText';
+            return 'Por favor, ingrese $labelText';
           }
           return null;
         },
@@ -414,7 +445,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
             }),
             const DropdownMenuItem<String>(
               value: '',
-              child: Text('Enter your own'),
+              child: Text('Ingrese el suyo'),
             ),
           ],
         ),
@@ -449,7 +480,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         _sellingController,
         _quantityController,
       ])) {
-        helper.showSnackBar('Please fill all fields!', "Error", scaffoldMessenger);
+        helper.showSnackBar('¡Por favor complete todos los campos!', "Error", scaffoldMessenger);
         return;
       }
       final newItem = Item(
@@ -482,11 +513,11 @@ class _AddItemScreenState extends State<AddItemScreen> {
         if (result['status'] == 'Error') {
           if (mounted) {
             helper.showDialogBox(
-                context, "Updating Quantity failed!", result['message']!);
+                context, "¡Falló la actualización de la cantidad!", result['message']!);
           }
         } else {
           if (mounted) {
-            helper.showSnackBar('Quantity successfully updated to ${existingProduct.quantity}!', "Success",
+            helper.showSnackBar('Cantidad actualizada correctamente a ${existingProduct.quantity}!', "Success",
                 scaffoldMessenger, duration: 2);
           }
         }
@@ -496,17 +527,17 @@ class _AddItemScreenState extends State<AddItemScreen> {
         if (result['status'] == 'Error') {
           if (mounted) {
             helper.showDialogBox(
-                context, "Adding Item failed!", result['message']!);
+                context, "¡Error al añadir el artículo!", result['message']!);
           }
         } else {
           if (mounted) {
-            helper.showSnackBar('Item added successfully!', "Success",
+            helper.showSnackBar('¡Artículo añadido correctamente!', "Success",
                 scaffoldMessenger, duration: 2);
           }
         }
       }
     } else {
-      helper.showSnackBar('Please fill all fields!', "Error", scaffoldMessenger);
+      helper.showSnackBar('¡Por favor complete todos los campos!', "Error", scaffoldMessenger);
     }
   }
 

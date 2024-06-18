@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter_new/flutter.dart' as charts;
+import 'package:google_fonts/google_fonts.dart';
 import '../models/item.dart';
 import '../services/firestore_service.dart';
 import '../utils/colors.dart';
@@ -44,14 +46,35 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     super.dispose();
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory Dashboard'),
+        title: Text(
+          'Inventory Dashboard',
+          style: GoogleFonts.lato(
+            fontSize: 20,
+            color: Colors.white,
+            letterSpacing: 1.0,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: AppColors.rosa,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _handleLogout(context);
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -71,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        'No items in inventory.',
+                        'No hay artículos en inventario.',
                         style: TextStyle(fontSize: 18.0),
                       ),
                       const SizedBox(height: 20),
@@ -104,7 +127,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildStatCard('Total Items', totalItems),
+                              _buildStatCard('Total de artículos', totalItems),
                               const SizedBox(height: 20),
                             ],
                           ),
@@ -113,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildStatCard('Total Categories', totalCategories),
+                              _buildStatCard('Total de categorías', totalCategories),
                               const SizedBox(height: 20),
                             ],
                           ),
@@ -219,12 +242,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 children: [
                   Text(
                     '\$$totalProfit',
-                    style: const TextStyle(
-                      fontSize: 30.0,
+                    style: GoogleFonts.lato(
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Roboto',
                       letterSpacing: 1.0,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -263,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   Widget _buildStatCard(String title, int value) {
-    Icon resultIcon = title == 'Total Items'
+    Icon resultIcon = title == 'Total de artículos'
         ? const Icon(Icons.shopping_cart, color: Colors.white, size: 60.0)
         : const Icon(Icons.category, color: Colors.white, size: 60.0);
 
@@ -284,10 +306,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   const SizedBox(height: 8.0),
                   Text(
                     value.toString(),
-                    style: const TextStyle(
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.white),
+                    style: GoogleFonts.lato(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -367,7 +391,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         '- ${item.name.length > 20 ? "${item.name.substring(0, 20)}...": item.name} '
         '- ${item.description.length > 20 ? "${item.description.substring(0, 20)}...": item.description} '
         '- ${item.color} '
-        '- ${item.size ?? "N/A"} '
+        '- ${item.size ?? "N/D"} '
         '- (${item.quantity})';
   }
 
@@ -389,10 +413,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           backgroundColor: AppColors.white,
           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+          minimumSize: const Size(double.infinity, 60),
         ),
-        child: const Text(
-          'Add Item',
-          style: TextStyle(fontSize: 20.0),
+        child: Text(
+          'Agregar artículo',
+          style: GoogleFonts.lato(
+            fontSize: 20,
+            color: AppColors.rosa,
+            letterSpacing: 1.0,
+          ),
         ),
       ),
     );

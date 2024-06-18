@@ -71,7 +71,7 @@ class _TradingChartState extends State<TradingChart> {
         } else if (snapshot.hasError) {
           return _helper.showStatus('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _helper.showStatus('No data available');
+          return _helper.showStatus('No hay datos disponibles');
         } else {
           List<SalesData> data = snapshot.data!;
           return SizedBox(

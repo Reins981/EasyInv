@@ -112,7 +112,7 @@ class Item {
         'date': saleDate,
       });
 
-      return {'status': 'Success', 'message': 'Sale recorded successfully'};
+      return {'status': 'Success', 'message': 'Venta registrada con éxito'};
     } catch (e) {
       return {'status': 'Error', 'message': '$e'};
     }
