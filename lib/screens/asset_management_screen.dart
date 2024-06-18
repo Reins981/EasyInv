@@ -141,9 +141,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildSortColumn('Tendencias'),
-        _buildSortColumn('Ganancias Principales'),
-        _buildSortColumn('A-Z'),
+        Expanded( child: _buildSortColumn('Tendencias')),
+        Expanded( child: _buildSortColumn('Ganancias')),
+        Expanded( child: _buildSortColumn('A-Z')),
       ],
     );
   }
@@ -153,13 +153,13 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
       onTap: () {
         title == 'Tendencias'
             ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByQuantitySold(order: trendOrder)
-            : title == 'Ganancias Principales'
+            : title == 'Ganancias'
             ? Provider.of<SearchProvider>(context, listen: false).getItemsSortedByProfit(order: profitOrder)
             : Provider.of<SearchProvider>(context, listen: false).getItemsSortedByName(order: nameOrder);
 
         if (title == 'Tendencias') {
           trendOrder = trendOrder == 'descending' ? 'ascending' : 'descending';
-        } else if (title == 'Ganancias Principales') {
+        } else if (title == 'Ganancias') {
           profitOrder = profitOrder == 'descending' ? 'ascending' : 'descending';
         } else {
           nameOrder = nameOrder == 'ascending' ? 'descending' : 'ascending';

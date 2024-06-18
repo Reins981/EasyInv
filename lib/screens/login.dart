@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Change text color to rosa
           content: TextField(
             controller: _emailController,
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: 'Ingrese su dirección de correo electrónico',
               labelStyle: const TextStyle(color: AppColors.pink),

@@ -347,7 +347,7 @@ class ItemDetailScreen extends StatefulWidget {
 
     Widget _buildHeader(Item item) {
       // Get the current month and year
-      String currentMonth = DateFormat('MMMM', 'es').format(DateTime.now());
+      String currentMonth = DateFormat('MMMM').format(DateTime.now());
       String currentYear = DateFormat('yyyy').format(DateTime.now());
 
       // Get the total number of quantity for this item being sold

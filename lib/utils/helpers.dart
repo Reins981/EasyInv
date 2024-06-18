@@ -532,8 +532,8 @@ class Helper {
           title: Text(
             'Venta del artículo',
             style: GoogleFonts.lato(
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
               color: AppColors.rosa,
               letterSpacing: 1.0,
             ),

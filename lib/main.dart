@@ -6,6 +6,7 @@ import 'package:easy_inv/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_file.dart';
 import 'providers/search_provider.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
