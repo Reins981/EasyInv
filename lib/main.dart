@@ -24,7 +24,6 @@ class AppLifecycleObserver with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       print('App is about to enter state $state');
-      cleanupOldSalesData();
     }
   }
 }
@@ -34,9 +33,12 @@ AppLifecycleObserver observer = AppLifecycleObserver();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   WidgetsBinding.instance.addObserver(observer);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
+
 class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: key);
 
