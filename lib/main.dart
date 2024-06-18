@@ -1,15 +1,13 @@
 // lib/main.dart
 import 'dart:async';
-
 import 'package:easy_inv/screens/asset_management_screen.dart';
 import 'package:easy_inv/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:intl/date_symbol_data_file.dart';
+import 'firebase_options.dart';
 import 'providers/search_provider.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login.dart';
 import 'utils/colors.dart';
@@ -30,12 +28,10 @@ class AppLifecycleObserver with WidgetsBindingObserver {
 
 AppLifecycleObserver observer = AppLifecycleObserver();
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure that the widgets are initialized
   WidgetsBinding.instance.addObserver(observer);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
   runApp(MyApp());
 }
 
