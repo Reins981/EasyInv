@@ -66,6 +66,12 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
         ),
         centerTitle: true,
         backgroundColor: AppColors.rosa,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         actions: [
           IconButton(
             onPressed: () async {
