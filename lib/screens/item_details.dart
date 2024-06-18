@@ -424,7 +424,20 @@ class ItemDetailScreen extends StatefulWidget {
             );
           } else {
             bool success = snapshot.data ?? false; // Default to false if snapshot.data is null
-            profit = success ? profit : 0;
+
+            // Reset relevant item attributes in case the sales data got deleted due to expiration
+            // but the item had been sold in the past
+            // Update state only if needed
+            if (!success && profit != 0) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  _item.profit = 0;
+                  _item.totalQuantitySold = 0;
+                });
+                widget.firestoreService.updateItem(_item, _item.id!).then((_){});
+              });
+            }
+            profit = profit.toDouble();
 
             return ElevatedButton(
               onPressed: () {},
