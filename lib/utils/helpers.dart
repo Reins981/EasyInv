@@ -174,7 +174,7 @@ class Helper {
             ),
           ),
           content: Text(
-            'Are you sure you want to delete this item?',
+            '¿Estás seguro de que deseas eliminar este elemento?',
             style: GoogleFonts.lato(
               fontSize: 16,
               color: Colors.white,
@@ -210,7 +210,7 @@ class Helper {
                 backgroundColor: AppColors.rosa, // Text color
               ),
               child: Text(
-                'Yes',
+                'Si',
                 style: GoogleFonts.lato(
                   fontSize: 16,
                   color: AppColors.pink,
@@ -651,7 +651,7 @@ class Helper {
                 backgroundColor: AppColors.rosa, // Text color
               ),
               child: Text(
-                'Sell',
+                'Vender',
                 style: GoogleFonts.lato(
                   fontSize: 16,
                   color: AppColors.pink,

@@ -190,15 +190,15 @@ class ItemDetailScreen extends StatefulWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildCombinedDetailCard([
-                    {'title': 'Name', 'value': _item.name.length > 20 ? '${_item.name.substring(0, 20)}...' : _item.name},
-                    {'title': 'Vendor', 'value': _item.vendor.length > 20 ? '${_item.vendor.substring(0, 20)}...' : _item.vendor},
-                    {'title': 'Description', 'value': _item.description.length  > 20 ? '${_item.description.substring(0, 20)}...' : _item.description},
+                    {'title': 'Nombre', 'value': _item.name.length > 20 ? '${_item.name.substring(0, 20)}...' : _item.name},
+                    {'title': 'Proveedor', 'value': _item.vendor.length > 20 ? '${_item.vendor.substring(0, 20)}...' : _item.vendor},
+                    {'title': 'Descripción', 'value': _item.description.length  > 20 ? '${_item.description.substring(0, 20)}...' : _item.description},
                   ]),
                   const SizedBox(width: 10),
                   _buildCombinedDetailCard([
                     {'title': 'Color', 'value': _item.color},
-                    {'title': 'Size', 'value': _item.size ?? 'N/A'},
-                    {'title': 'Quantity', 'value': _item.quantity.toString()},
+                    {'title': 'Tamaño', 'value': _item.size ?? 'N/A'},
+                    {'title': 'Cantidad', 'value': _item.quantity.toString()},
                   ]),
                 ],
               ),
