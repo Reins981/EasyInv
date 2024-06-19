@@ -6,6 +6,7 @@ import '../models/item.dart';
 import '../services/firestore_service.dart';
 import '../utils/colors.dart';
 import '../utils/helpers.dart';
+import '../utils/ocr_utils.dart';
 
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
@@ -24,6 +25,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final TextEditingController _buyingController = TextEditingController();
   final TextEditingController _sellingController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  final OCRUtils ocr = OCRUtils();
   String _selectedCategory = 'Ropa'; // Track the selected category
   String? _selectedSize = 'S'; // Track the selected size
   String _selectedColor = 'rojo'; // Track the selected size
@@ -237,6 +239,32 @@ class _AddItemScreenState extends State<AddItemScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ocr.processImage().then((value) {
+            if (value.isNotEmpty) {
+              List<TextEditingController> controllers = [
+                _nameController,
+                _descriptionController,
+                _vendorController,
+              ];
+
+              setState(() {
+                _clearTextFields(controllers);
+                enterYourOwnSelected = true;
+                for (int i = 0; i < controllers.length && i < value.length; i++) {
+                  controllers[i].text = value[i];
+                  print("Text $i: ${controllers[i].text}");
+                }
+              });
+            }
+          });
+        },
+        tooltip: 'Capturar Imagen',
+        backgroundColor: AppColors.rosa,
+        foregroundColor: Colors.white,
+        child: Icon(Icons.camera_alt),
       ),
     );
   }
