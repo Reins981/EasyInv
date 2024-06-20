@@ -257,7 +257,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 _clearTextFields(controllers);
                 enterYourOwnSelected = true;
                 for (int i = 0; i < controllers.length && i < value.length; i++) {
-                  controllers[i].text = value[i];
+                  controllers[i].text = controllers[i] == _nameController || controllers[i] == _descriptionController || controllers[i] == _vendorController
+                      ? value[i].toString()
+                      : !isIntegerOrDouble(value[i]) ? 0.toString()
+                      : value[i].toString();
                   print("Text $i: ${controllers[i].text}");
                 }
               });
@@ -581,5 +584,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
     _sellingController.dispose();
     _quantityController.dispose();
     super.dispose();
+  }
+
+  bool isIntegerOrDouble(value) {
+    return int.tryParse(value) != null || double.tryParse(value) != null;
   }
 }
