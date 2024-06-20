@@ -9,7 +9,7 @@ class SearchProvider with ChangeNotifier {
   String _searchText = '';
 
   SearchProvider(this.firestoreService) {
-    _fetchItems();
+    fetchItems();
   }
 
   List<Item>? get items => _filteredItems ?? _items;
@@ -19,6 +19,11 @@ class SearchProvider with ChangeNotifier {
   void setSearchText(String searchText) {
     _searchText = searchText;
     _filterItems();
+    notifyListeners();
+  }
+
+  void reset() {
+    _items = null;
     notifyListeners();
   }
 
@@ -43,7 +48,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _fetchItems() async {
+  Future<void> fetchItems() async {
     try {
       // Listen to the stream of items from Firestore
       firestoreService.getAllItems().listen((List<Item>? fetchedItems) {

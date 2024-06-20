@@ -37,6 +37,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
       curve: Curves.easeInOut,
     );
     _animationController.forward();
+
+    // Fetch items when screen is initialized
+    Provider.of<SearchProvider>(context, listen: false).fetchItems();
   }
 
   @override
@@ -48,6 +51,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
 
   Future<void> _handleLogout(BuildContext context) async {
     final FirebaseAuth auth = FirebaseAuth.instance;
+    Provider.of<SearchProvider>(context, listen: false).reset();
     await auth.signOut();
     Navigator.pushReplacementNamed(context, '/login');
   }
