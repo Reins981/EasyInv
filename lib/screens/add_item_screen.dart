@@ -248,6 +248,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 _nameController,
                 _descriptionController,
                 _vendorController,
+                _buyingController,
+                _sellingController,
+                _quantityController,
               ];
 
               setState(() {
