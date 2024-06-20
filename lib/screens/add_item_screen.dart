@@ -264,6 +264,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   print("Text $i: ${controllers[i].text}");
                 }
               });
+            } else {
+              helper.showSnackBar('¡No se detectó ningún texto en la imagen!', "Error", ScaffoldMessenger.of(context));
             }
           });
         },
