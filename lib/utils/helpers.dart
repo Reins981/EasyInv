@@ -229,6 +229,78 @@ class Helper {
     await firestoreService.deleteItem(item.id!);
   }
 
+  Future<void> validateAndSubmitPrice(BuildContext context, Item item, TextEditingController priceController, String label, FirestoreService firestoreService, ScaffoldMessengerState scaffoldMessenger) async {
+    String priceText = priceController.text.trim();
+
+    if (priceText.isEmpty || priceText == '0') {
+      Navigator.of(context).pop(); // Close the dialog
+      if (scaffoldMessenger.mounted) {
+        showSnackBar(
+            label == 'Buying Price'
+                ? 'Precio de Compra no puede estar vacío ni ser cero. Por favor, ingrese un número válido.'
+                : 'Precio de Venta no puede estar vacío ni ser cero. Por favor, ingrese un número válido.',
+            "Error", scaffoldMessenger);
+      }
+      return;
+    }
+
+    // Regular expression to match a number with up to 3 decimal places
+    final RegExp regex = RegExp(r'^\d*\.?\d{0,3}$');
+
+    if (!regex.hasMatch(priceText)) {
+      Navigator.of(context).pop(); // Close the dialog
+      if (scaffoldMessenger.mounted) {
+        showSnackBar(
+            'El precio no puede tener más de tres posiciones después del punto decimal.',
+            "Error", scaffoldMessenger);
+      }
+      return;
+    }
+
+    double? newPrice = double.tryParse(priceText);
+    if (newPrice == null) {
+      Navigator.of(context).pop(); // Close the dialog
+      if (scaffoldMessenger.mounted) {
+        showSnackBar(
+            'El precio ingresado no es un número válido. Por favor, ingrese un número válido.',
+            "Error", scaffoldMessenger);
+      }
+      return;
+    }
+
+    if (label == 'Buying Price') {
+      item.buyingPrice = newPrice;
+    } else {
+      item.sellingPrice = newPrice;
+    }
+
+    Map<String, String> result = await firestoreService.updateItem(
+        item, item.id!);
+    if (result['status'] == 'Error') {
+      Navigator.of(context).pop(); // Close the dialog
+      if (scaffoldMessenger.mounted) {
+        showSnackBar(
+            label == 'Buying Price'
+                ? "Actualizando Precio de Compra falló! ${result['message']}"
+                : "Actualizando Precio de Venta falló! ${result['message']}",
+            "Error", scaffoldMessenger);
+      }
+    } else {
+      Navigator.of(context).pop(); // Close the dialog
+      if (scaffoldMessenger.mounted) {
+        if (label == 'Buying Price') {
+          showSnackBar(
+              '$label actualizado correctamente a ${item.buyingPrice}!',
+              "Success", scaffoldMessenger);
+        } else {
+          showSnackBar(
+              '$label actualizado correctamente a ${item.sellingPrice}!',
+              "Success", scaffoldMessenger);
+        }
+      }
+    }
+  }
+
   void handleItemUpdatePriceWithDialog(
       BuildContext context,
       Item item,
@@ -247,7 +319,7 @@ class Helper {
             borderRadius: BorderRadius.circular(30.0),
           ),
           title: Text(
-            'Actualizar $label',
+            label == 'Buying Price' ? 'Actualizar Precio de Compra': 'Actualizar Precio de Venta',
             style: GoogleFonts.lato(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -260,7 +332,7 @@ class Helper {
             controller: priceController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: '$label nuevo',
+              labelText: label == 'Buying Price' ? 'Precio de Compra nuevo': 'Precio de Venta nuevo',
               labelStyle: GoogleFonts.lato(
                 fontSize: 16,
                 color: Colors.pink,
@@ -298,7 +370,7 @@ class Helper {
                 backgroundColor: AppColors.rosa, // Text color
               ),
               child: Text(
-                'Cancel',
+                'Cancelar',
                 style: GoogleFonts.lato(
                   fontSize: 16,
                   color: AppColors.pink,
@@ -309,61 +381,11 @@ class Helper {
             ElevatedButton(
               onPressed: () async {
                 // Update quantity in Firebase
-                String priceText = priceController.text.trim();
-                if (priceText.isEmpty || priceText == '0') {
-                  Navigator.of(context).pop(); // Close the dialog
-                  if (scaffoldMessenger.mounted) {
-                    showSnackBar(
-                        '$label no puede estar vacío ni ser cero. Por favor, ingrese un número válido.',
-                        "Error", scaffoldMessenger);
-                  }
-                  return;
-                }
-
-                int? newPrice = int.tryParse(priceText);
-                if (newPrice == null) {
-                  Navigator.of(context).pop(); // Close the dialog
-                  if (scaffoldMessenger.mounted) {
-                    showSnackBar(
-                        '$label inválido. Por favor, ingrese un número válido.',
-                        "Error", scaffoldMessenger);
-                  }
-                  return;
-                }
-
-                if (label == 'Buying Price') {
-                  item.buyingPrice = newPrice;
-                } else {
-                  item.sellingPrice = newPrice;
-                }
-
-                Map<String, String> result = await firestoreService.updateItem(
-                    item, item.id!);
-                if (result['status'] == 'Error') {
-                  Navigator.of(context).pop(); // Close the dialog
-                  if (scaffoldMessenger.mounted) {
-                    showSnackBar(
-                        "Actualizando $label falló! ${result['message']}",
-                        "Error", scaffoldMessenger);
-                  }
-                } else {
-                  Navigator.of(context).pop(); // Close the dialog
-                  if (scaffoldMessenger.mounted) {
-                    if (label == 'Buying Price') {
-                      showSnackBar(
-                          '$label actualizado correctamente a ${item.buyingPrice}!',
-                          "Success", scaffoldMessenger);
-                    } else {
-                      showSnackBar(
-                          '$label actualizado correctamente a ${item.sellingPrice}!',
-                          "Success", scaffoldMessenger);
-                    }
-                  }
+                validateAndSubmitPrice(context, item, priceController, label, firestoreService, scaffoldMessenger);
                   if (onItemUpdate != null) {
                     onItemUpdate(
                         item); // Call the callback with the updated item
                   }
-                }
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -384,7 +406,8 @@ class Helper {
     );
   }
 
-  void handleItemUpdateQuantityWithDialog(BuildContext context, Item item, FirestoreService firestoreService, Function(Item)? onItemUpdate) {
+  void handleItemUpdateQuantityWithDialog(
+      BuildContext context, String mode, Item item, FirestoreService firestoreService, Function(Item)? onItemUpdate) {
     TextEditingController quantityController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -477,7 +500,16 @@ class Helper {
                   }
                   return;
                 }
-                item.quantity += newQuantity;
+                if (mode == "Remove" && newQuantity > item.quantity) {
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (scaffoldMessenger.mounted) {
+                    showSnackBar(
+                        'Cantidad no válida. No puedes eliminar más artículos de los que tienes',
+                        "Error", scaffoldMessenger);
+                  }
+                  return;
+                }
+                mode == "Add" ? item.quantity += newQuantity : item.quantity -= newQuantity;
                 Map<String, String> result = await firestoreService.updateItem(item, item.id!);
                 if (result['status'] == 'Error') {
                   Navigator.of(context).pop(); // Close the dialog

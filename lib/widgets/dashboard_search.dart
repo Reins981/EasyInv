@@ -248,6 +248,7 @@ import '../utils/helpers.dart';
             onPressed: () {
               helper.handleItemUpdateQuantityWithDialog(
                   context,
+                  "Add",
                   item,
                   firestoreService,
                   null

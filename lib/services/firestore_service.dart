@@ -284,7 +284,7 @@ class FirestoreService {
       for (var doc in remainingItemsSnapshot.docs) {
         if (!quantitySoldMap.containsKey(doc.id)) {
           Item item = Item.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-          itemList.add(item);
+          order == "descending" ? itemList.add(item) : itemList.insert(0, item);
         }
       }
     } catch (e) {

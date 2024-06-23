@@ -52,9 +52,24 @@ class ItemDetailScreen extends StatefulWidget {
     void _addItem() {
       widget.helper.handleItemUpdateQuantityWithDialog(
           context,
+          "Add",
           _item,
           widget.firestoreService,
           (updatedItem) {
+            setState(() {
+              _item = updatedItem;
+            });
+          }
+      );
+    }
+
+    void _removeItem() {
+      widget.helper.handleItemUpdateQuantityWithDialog(
+          context,
+          "Remove",
+          _item,
+          widget.firestoreService,
+              (updatedItem) {
             setState(() {
               _item = updatedItem;
             });
@@ -197,7 +212,7 @@ class ItemDetailScreen extends StatefulWidget {
                   const SizedBox(width: 10),
                   _buildCombinedDetailCard([
                     {'title': 'Color', 'value': _item.color},
-                    {'title': 'Tamaño', 'value': _item.size ?? 'N/A'},
+                    {'title': 'Tamaño', 'value': _item.size ?? 'N/D'},
                     {'title': 'Cantidad', 'value': _item.quantity.toString()},
                   ]),
                 ],
@@ -230,6 +245,16 @@ class ItemDetailScreen extends StatefulWidget {
                       AppColors.rosa,
                       AppColors.white,
                       _addItem,
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      'Add',
+                      Icons.remove,
+                      AppColors.pink,
+                      AppColors.white,
+                      _removeItem,
                     ),
                   ),
                   Expanded(

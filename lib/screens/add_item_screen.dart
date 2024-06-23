@@ -15,7 +15,7 @@ class AddItemScreen extends StatefulWidget {
   _AddItemScreenState createState() => _AddItemScreenState();
 }
 
-class _AddItemScreenState extends State<AddItemScreen> {
+class _AddItemScreenState extends State<AddItemScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final Helper helper = Helper();
   final FirestoreService firestoreService = FirestoreService();
@@ -25,6 +25,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final TextEditingController _buyingController = TextEditingController();
   final TextEditingController _sellingController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  late final AnimationController _animationController;
+  late Animation<double> _animation;
   final OCRUtils ocr = OCRUtils();
   String _selectedCategory = 'Ropa'; // Track the selected category
   String? _selectedSize = 'S'; // Track the selected size
@@ -94,10 +96,29 @@ class _AddItemScreenState extends State<AddItemScreen> {
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
     // Fetch item names and descriptions for suggestions
     _fetchItemSuggestions().then((_) {
       setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _vendorController.dispose();
+    _descriptionController.dispose();
+    _buyingController.dispose();
+    _sellingController.dispose();
+    _quantityController.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleLogout(BuildContext context) async {
@@ -187,26 +208,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     _buildDropdownFieldWithSuggestions('Precio de venta del artículo', itemSellingPrice, _sellingController, doubleOnly: true),
                     _buildDropdownFieldWithSuggestions('Cantidad de artículos', itemQuantity, _quantityController, integerOnly: true),
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        _addItem();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: AppColors.rosa,
-                        backgroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-                        minimumSize: const Size(double.infinity, 60),
-                      ),
-                      child: Text(
-                        'Agregar Artículo',
-                        style: GoogleFonts.lato(
-                          fontSize: 20,
-                          color: AppColors.rosa,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
+                    _buildAddItemButton(),
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
@@ -274,6 +276,39 @@ class _AddItemScreenState extends State<AddItemScreen> {
         foregroundColor: Colors.white,
         child: Icon(Icons.camera_alt),
       ),
+    );
+  }
+
+  Widget _buildAddItemButton() {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: ElevatedButton(
+            onPressed: () {
+              _addItem();
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: AppColors.rosa,
+              backgroundColor: AppColors.white,
+              padding: const EdgeInsets.symmetric(
+                  vertical: 16.0, horizontal: 32.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0)),
+              minimumSize: const Size(double.infinity, 60),
+            ),
+            child: Text(
+              'Agregar Artículo',
+              style: GoogleFonts.lato(
+                fontSize: 20,
+                color: AppColors.rosa,
+                letterSpacing: 1.0,
+              ),
+            ),
+          )
+        );
+      },
     );
   }
 
@@ -575,17 +610,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
     } else {
       helper.showSnackBar('¡Por favor complete todos los campos!', "Error", scaffoldMessenger);
     }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _vendorController.dispose();
-    _descriptionController.dispose();
-    _buyingController.dispose();
-    _sellingController.dispose();
-    _quantityController.dispose();
-    super.dispose();
   }
 
   bool isIntegerOrDouble(value) {

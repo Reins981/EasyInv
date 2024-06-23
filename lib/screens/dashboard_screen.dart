@@ -17,7 +17,7 @@ class DashboardScreen extends StatefulWidget {
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin{
+class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
   final FirestoreService firestoreService = FirestoreService();
   final ScrollController _scrollController = ScrollController();
   late final AnimationController _animationController;
@@ -31,12 +31,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut, // Adjust curve as needed
-    );
-    _animationController.forward(); // Start the animation
   }
 
   @override
@@ -120,36 +118,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   children: [
                     _buildTotalProfitWidget(context, totalProfit),
                     const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildStatCard('Total de artículos', totalItems),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildStatCard('Total de categorías', totalCategories),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
-                        ),
-                      ],
+                    TotalsAndAddItemCard(
+                      totalItems: totalItems,
+                      totalCategories: totalCategories,
+                      onAddItem: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AddItemScreen()),
+                        );
+                      },
                     ),
+                    const SizedBox(height: 20),
                     LowStockItemWidget(
                         items: lowStockItems
                     ),
                     const SizedBox(height: 20),
                     _buildInventoryChart(snapshot.data!, chartHeight),
-                    const SizedBox(height: 20),
-                    _buildAddItemButton(context),
                   ],
                 ),
               );
@@ -264,23 +248,33 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   Widget _buildInventoryButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AssetManagementScreen()),
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AssetManagementScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.purpleAccent,
+              backgroundColor: Colors.white,
+              shape: CircleBorder(),
+              padding: const EdgeInsets.all(16.0),
+              elevation: 4,
+            ),
+            child: const Icon(
+              Icons.inventory,
+              color: Colors.purpleAccent,
+              size: 30.0,
+            ),
+          ),
         );
       },
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.purpleAccent, backgroundColor: Colors.white, shape: CircleBorder(),
-        padding: const EdgeInsets.all(16.0),
-        elevation: 4,
-      ),
-      child: const Icon(
-        Icons.inventory,
-        color: Colors.purpleAccent,
-        size: 30.0,
-      ),
     );
   }
 
@@ -427,3 +421,114 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 }
+
+class TotalsAndAddItemCard extends StatelessWidget {
+  final int totalItems;
+  final int totalCategories;
+  final VoidCallback onAddItem;
+
+  const TotalsAndAddItemCard({
+    Key? key,
+    required this.totalItems,
+    required this.totalCategories,
+    required this.onAddItem,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStatCard('Total de artículos', totalItems),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStatCard('Total de categorías', totalCategories),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Center( // Center widget added here
+              child: ElevatedButton(
+                onPressed: onAddItem,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: AppColors.rosa,
+                  backgroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+                  minimumSize: const Size(double.infinity, 60),
+                ),
+                child: Text(
+                  'Agregar artículo',
+                  style: GoogleFonts.lato(
+                    fontSize: 20,
+                    color: AppColors.rosa,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, int value) {
+    Icon resultIcon = title == 'Total de artículos'
+        ? const Icon(Icons.shopping_cart, color: Colors.white, size: 60.0)
+        : const Icon(Icons.category, color: Colors.white, size: 60.0);
+
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      color: AppColors.rosa,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            width: constraints.maxWidth,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  resultIcon,
+                  const SizedBox(height: 8.0),
+                  Text(
+                    value.toString(),
+                    style: GoogleFonts.lato(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
