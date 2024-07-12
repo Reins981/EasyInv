@@ -551,6 +551,7 @@ class Helper {
 
   void handleItemSaleWithDialog(BuildContext context, Item item, FirestoreService firestoreService, Function(Item) onItemSale) {
     TextEditingController saleController = TextEditingController();
+    TextEditingController clienteController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     showDialog(
@@ -570,35 +571,71 @@ class Helper {
               letterSpacing: 1.0,
             ),
           ), // Change text color to rosa
-          content: TextField(
-            controller: saleController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: '¿Cuántos artículos se han vendido?',
-              labelStyle: GoogleFonts.lato(
-                fontSize: 16,
-                color: AppColors.pink,
-                letterSpacing: 1.0,
-              ), // Customize label text color
-              fillColor: AppColors.rosa, // Fill color of the text field
-              filled: true,
-              border: OutlineInputBorder(
-                borderSide: BorderSide.none, // No border
-                borderRadius: BorderRadius.circular(30.0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: saleController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: '¿Cuántos artículos se han vendido?',
+                  labelStyle: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: AppColors.pink,
+                    letterSpacing: 1.0,
+                  ), // Customize label text color
+                  fillColor: AppColors.rosa, // Fill color of the text field
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border when focused
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border for error
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border for error when focused
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide.none, // No border when focused
-                borderRadius: BorderRadius.circular(30.0),
+              const SizedBox(height: 16.0), // Space between TextFields
+              TextField(
+                controller: clienteController,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  labelText: 'Cliente',
+                  labelStyle: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: AppColors.pink,
+                    letterSpacing: 1.0,
+                  ), // Customize label text color
+                  fillColor: AppColors.rosa, // Fill color of the text field
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border when focused
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border for error
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none, // No border for error when focused
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
               ),
-              errorBorder: OutlineInputBorder(
-                borderSide: BorderSide.none, // No border for error
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderSide: BorderSide.none, // No border for error when focused
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-            ),
+            ],
           ),
           actions: <Widget>[
             TextButton(
@@ -653,8 +690,10 @@ class Helper {
                   }
                 }
 
-                // Update the new quantity and profit in Firebase
-                Map<String, String> resultSale = await item.recordSale(numItemsSoldInt);
+                // Update the new quantity, profit and client in Firebase
+                String client = clienteController.text.trim();
+                client = client.isEmpty ? 'Cliente no especificado' : client;
+                Map<String, String> resultSale = await item.recordSale(numItemsSoldInt, client);
                 if (resultSale['status'] == 'Error') {
                   Navigator.of(context).pop(); // Close the dialog
                   if (scaffoldMessenger.mounted) {

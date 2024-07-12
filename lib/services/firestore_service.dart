@@ -335,6 +335,34 @@ class FirestoreService {
     return itemList;
   }
 
+  Future<Map<String, Map<String ,int>>> getItemsQuantitySoldByClient() async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore.collection('sales').get();
+
+      Map<String, Map<String, int>> quantitySoldByClient = {};
+      for (var doc in querySnapshot.docs) {
+        String client = doc['client'] as String;
+        int quantitySold = doc['quantitySold'] as int;
+        String itemName = doc['itemName'] as String;
+
+        if (quantitySoldByClient.containsKey(client)) {
+          if (quantitySoldByClient[client]!.containsKey(itemName)) {
+            quantitySoldByClient[client]![itemName] = quantitySoldByClient[client]![itemName]! + quantitySold;
+          } else {
+            // Another item sold by the same client
+            quantitySoldByClient[client]![itemName] = quantitySold;
+          }
+        } else {
+          quantitySoldByClient[client] = {itemName: quantitySold };
+        }
+      }
+
+      return quantitySoldByClient;
+    } catch (e) {
+      return {};
+    }
+  }
+
   Future<QuerySnapshot> getOneMonthData(String itemId) async {
     // Add your data points here
     // Function to get one month data from firestore

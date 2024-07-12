@@ -90,7 +90,7 @@ class Item {
     }
   }
 
-  Future<Map<String, String>> recordSale(int quantitySold) async {
+  Future<Map<String, String>> recordSale(int quantitySold, String client) async {
     final sales = sellingPrice > buyingPrice ? quantitySold * (sellingPrice - buyingPrice) : 0;
     final saleDate = Timestamp.now();
 
@@ -107,9 +107,11 @@ class Item {
 
       await FirebaseFirestore.instance.collection('sales').add({
         'itemId': id,
+        'itemName': name,
         'quantitySold': quantitySold,
         'sales': sales,
         'date': saleDate,
+        'client': client,
       });
 
       return {'status': 'Success', 'message': 'Venta registrada con éxito'};

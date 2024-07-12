@@ -219,6 +219,8 @@ class ItemDetailScreen extends StatefulWidget {
               ),
               const SizedBox(height: 20),
               _buildHeader(_item),
+              const SizedBox(height: 20),
+              _buildItemsQuantitySoldByClient(),
               Container(
                 height: 200,
                 width: double.infinity,
@@ -415,6 +417,69 @@ class ItemDetailScreen extends StatefulWidget {
             ),
           ),
         ],
+      );
+    }
+
+    Widget _buildItemsQuantitySoldByClient() {
+      return FutureBuilder<Map<String, Map<String ,int>>>(
+        future: widget.firestoreService.getItemsQuantitySoldByClient(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+            ));
+          } else if (snapshot.hasError) {
+            return widget.helper.showStatus('Error: ${snapshot.error}');
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return widget.helper.showStatus('No hay datos disponibles');
+          } else {
+            Map<String, Map<String ,int>> data = snapshot.data!;
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                String client = data.keys.elementAt(index);
+                Map<String, int> items = data[client]!;
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  elevation: 4,
+                  child: ExpansionTile(
+                    title: Text(
+                      client,
+                      style: GoogleFonts.lato(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.rosa,
+                      ),
+                    ),
+                    children: items.entries.map((entry) {
+                      return ListTile(
+                        title: Text(
+                          'Artículo: ${entry.key}',
+                          style: GoogleFonts.lato(
+                            fontSize: 16,
+                            color: AppColors.pink,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Cantidad vendida: ${entry.value}',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: AppColors.rosa,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+            );
+          }
+        },
       );
     }
 
