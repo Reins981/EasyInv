@@ -249,9 +249,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> with Sing
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildPriceContainer(items[index].buyingPrice, Colors.red),
-                      _buildPriceContainer(items[index].sellingPrice, Colors.green),
-                      _buildProfitContainer(items[index].profit),
+                      _buildPriceContainer(items[index].buyingPrice.toStringAsFixed(2), Colors.red),
+                      _buildPriceContainer(items[index].sellingPrice.toStringAsFixed(2), Colors.green),
+                      _buildProfitContainer(items[index].profit.toStringAsFixed(2)),
                     ],
                   ),
                 ),

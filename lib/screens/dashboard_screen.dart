@@ -53,91 +53,79 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Inventory Dashboard',
-          style: GoogleFonts.lato(
-            fontSize: 20,
-            color: Colors.white,
-            letterSpacing: 1.0,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColors.rosa,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await _handleLogout(context);
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
       body: Stack(
         children: [
-          StreamBuilder<List<Item>>(
-            stream: firestoreService.getAllItems(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
-                ));
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text(snapshot.error.toString()));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
+          Positioned.fill(
+            child: StreamBuilder<List<Item>>(
+              stream: firestoreService.getAllItems(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+                    ),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text(snapshot.error.toString()));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'No hay artículos en inventario.',
+                          style: TextStyle(fontSize: 18.0),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildAddItemButton(context),
+                      ],
+                    ),
+                  );
+                }
+
+                // Calculate inventory statistics
+                final totalItems = snapshot.data!.length;
+                final totalCategories = snapshot.data!
+                    .map((item) => item.category)
+                    .toSet()
+                    .length;
+                lowStockItems =
+                    snapshot.data!.where((item) => item.quantity < 5).toList();
+
+                double totalProfit = snapshot.data!
+                    .fold(0, (total, item) => total + item.profit);
+                double chartHeight = calculateChartHeight(snapshot.data!);
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  controller: _scrollController,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'No hay artículos en inventario.',
-                        style: TextStyle(fontSize: 18.0),
+                      const SizedBox(height: 20),
+                      _buildTotalProfitWidget(context, totalProfit),
+                      const SizedBox(height: 20),
+                      TotalsAndAddItemCard(
+                        totalItems: totalItems,
+                        totalCategories: totalCategories,
+                        onAddItem: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AddItemScreen()),
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
-                      _buildAddItemButton(context),
+                      LowStockItemWidget(items: lowStockItems),
+                      const SizedBox(height: 20),
+                      _buildInventoryChart(snapshot.data!, chartHeight),
                     ],
                   ),
                 );
-              }
-
-              // Calculate inventory statistics
-              final totalItems = snapshot.data!.length;
-              final totalCategories = snapshot.data!.map((item) => item.category).toSet().length;
-              lowStockItems = snapshot.data!.where((item) => item.quantity < 5).toList();
-
-              double totalProfit = snapshot.data!.fold(0, (total, item) => total + item.profit);
-              double chartHeight = calculateChartHeight(snapshot.data!);
-
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                controller: _scrollController,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTotalProfitWidget(context, totalProfit),
-                    const SizedBox(height: 20),
-                    TotalsAndAddItemCard(
-                      totalItems: totalItems,
-                      totalCategories: totalCategories,
-                      onAddItem: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const AddItemScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    LowStockItemWidget(
-                        items: lowStockItems
-                    ),
-                    const SizedBox(height: 20),
-                    _buildInventoryChart(snapshot.data!, chartHeight),
-                  ],
-                ),
-              );
-            },
+              },
+            ),
           ),
           Positioned(
             bottom: 80, // Position above the bottom button
@@ -145,8 +133,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             child: FloatingActionButton(
               heroTag: 'vertical_align_top',
               mini: true,
-              backgroundColor: AppColors.rosa, // Set background color to transparent
-              foregroundColor: Colors.white, // Set foreground color to rosa
+              backgroundColor: AppColors.rosa, // Set background color to rosa
+              foregroundColor: Colors.white, // Set foreground color to white
               child: const Icon(Icons.vertical_align_top), // Icon indicating upwards scrolling
               onPressed: () {
                 _scrollToTop();
@@ -159,8 +147,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             child: FloatingActionButton(
               heroTag: 'vertical_align_bottom',
               mini: true, // Makes the button smaller
-              backgroundColor: AppColors.rosa, // Set background color to transparent
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.rosa, // Set background color to rosa
+              foregroundColor: Colors.white, // Set foreground color to white
               child: const Icon(Icons.vertical_align_bottom), // Icon for the button
               onPressed: () {
                 _scrollToBottom();
@@ -189,6 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   Widget _buildTotalProfitWidget(BuildContext context, double totalProfit) {
+    String formattedTotalProfit = totalProfit.toStringAsFixed(2); // Limit to 2 decimal places
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -210,32 +199,36 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              ScaleTransition(
-                scale: _animation, // Assuming _animation is defined in your State class
-                child: const Icon(
-                  Icons.attach_money,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
-              ),
-              const SizedBox(width: 8.0),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '\$$totalProfit',
-                    style: GoogleFonts.lato(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: Colors.white,
-                    ),
+          Expanded(
+            child: Row(
+              children: [
+                ScaleTransition(
+                  scale: _animation, // Assuming _animation is defined in your State class
+                  child: const Icon(
+                    Icons.attach_money,
+                    color: Colors.white,
+                    size: 30.0,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(width: 8.0),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '\$$formattedTotalProfit', // Use formatted total profit
+                        style: GoogleFonts.lato(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           Column(
             children: [
