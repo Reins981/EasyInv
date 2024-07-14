@@ -178,7 +178,7 @@ class ItemDetailScreen extends StatefulWidget {
                     child: Tooltip(
                       message: 'Cambiar precio de compra',
                       child: _buildPriceButton(
-                        _item.buyingPrice.toString(),
+                        _item.buyingPrice.toStringAsFixed(2),
                         "Buying Price",
                         Colors.red,
                         Colors.red,
@@ -190,7 +190,7 @@ class ItemDetailScreen extends StatefulWidget {
                     child: Tooltip(
                       message: 'Cambiar precio de venta',
                       child: _buildPriceButton(
-                        _item.sellingPrice.toString(),
+                        _item.sellingPrice.toStringAsFixed(2),
                         "Selling Price",
                         Colors.green,
                         Colors.green,
@@ -218,10 +218,9 @@ class ItemDetailScreen extends StatefulWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              _buildHeader(_item),
+              _buildItemsQuantitySoldByClient(_item),
               const SizedBox(height: 20),
-              _buildItemsQuantitySoldByClient(),
-              Container(
+              /*Container(
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -235,7 +234,7 @@ class ItemDetailScreen extends StatefulWidget {
                     firestoreService: widget.firestoreService
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 20),*/
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -372,111 +371,87 @@ class ItemDetailScreen extends StatefulWidget {
       );
     }
 
-    Widget _buildHeader(Item item) {
-      // Get the current month and year
-      String currentMonth = DateFormat('MMMM').format(DateTime.now());
-      String currentYear = DateFormat('yyyy').format(DateTime.now());
-
+    Widget _buildItemsQuantitySoldByClient(Item item) {
       // Get the total number of quantity for this item being sold
       int totalQuantitySold = item.totalQuantitySold;
-
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.pink[50], // Example background color
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '$currentMonth $currentYear',
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.pink,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 8), // Adjust spacing between texts as needed
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.pink[50], // Example background color
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'Total vendido: $totalQuantitySold',
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.pink,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      );
-    }
-
-    Widget _buildItemsQuantitySoldByClient() {
-      return FutureBuilder<Map<String, Map<String ,int>>>(
-        future: widget.firestoreService.getItemsQuantitySoldByClient(),
+      String currentMonth = DateFormat('MMMM').format(DateTime.now());
+      String currentYear = DateFormat('yyyy').format(DateTime.now());
+      return FutureBuilder<Map<String, Map<String, int>>>(
+        future: widget.firestoreService.getItemQuantitySoldByClient(item),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
-            ));
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pink),
+              ),
+            );
           } else if (snapshot.hasError) {
             return widget.helper.showStatus('Error: ${snapshot.error}');
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return widget.helper.showStatus('No hay datos disponibles');
           } else {
-            Map<String, Map<String ,int>> data = snapshot.data!;
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                String client = data.keys.elementAt(index);
-                Map<String, int> items = data[client]!;
+            Map<String, Map<String, int>> data = snapshot.data!;
+            List<Widget> itemList = [];
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+            itemList.add(
+              ListTile(
+                title: Text(
+                  'Artículo: ${item.name}',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: AppColors.pink,
                   ),
-                  elevation: 4,
-                  child: ExpansionTile(
+                ),
+                subtitle: Text(
+                  'Cantidad total vendida: $totalQuantitySold',
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    color: AppColors.rosa,
+                  ),
+                ),
+              ),
+            );
+
+            data.forEach((client, items) {
+              items.forEach((itemName, quantitySold) {
+                itemList.add(
+                  ListTile(
                     title: Text(
-                      client,
+                      'Cliente: $client',
                       style: GoogleFonts.lato(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.pink,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Cantidad vendida: $quantitySold',
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
                         color: AppColors.rosa,
                       ),
                     ),
-                    children: items.entries.map((entry) {
-                      return ListTile(
-                        title: Text(
-                          'Artículo: ${entry.key}',
-                          style: GoogleFonts.lato(
-                            fontSize: 16,
-                            color: AppColors.pink,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Cantidad vendida: ${entry.value}',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            color: AppColors.rosa,
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ),
                 );
-              },
+              });
+            });
+
+            return Card(
+              margin: const EdgeInsets.all(16.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              elevation: 4,
+              child: ExpansionTile(
+                title: Text(
+                  'Ventas por cliente\n$currentMonth $currentYear',
+                  style: GoogleFonts.lato(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.pink,
+                  ),
+                ),
+                children: itemList,
+              ),
             );
           }
         },
@@ -531,6 +506,7 @@ class ItemDetailScreen extends StatefulWidget {
               });
             }
             profit = profit.toDouble();
+            profit = profit.toStringAsFixed(2);
 
             return ElevatedButton(
               onPressed: () {},

@@ -335,9 +335,11 @@ class FirestoreService {
     return itemList;
   }
 
-  Future<Map<String, Map<String ,int>>> getItemsQuantitySoldByClient() async {
+  Future<Map<String, Map<String ,int>>> getItemQuantitySoldByClient(Item item) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore.collection('sales').get();
+      QuerySnapshot querySnapshot = await _firestore.collection('sales')
+          .where('itemId', isEqualTo: item.id)
+          .get();
 
       Map<String, Map<String, int>> quantitySoldByClient = {};
       for (var doc in querySnapshot.docs) {
