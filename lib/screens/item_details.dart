@@ -201,24 +201,57 @@ class ItemDetailScreen extends StatefulWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildCombinedDetailCard([
-                    {'title': 'Nombre', 'value': _item.name.length > 20 ? '${_item.name.substring(0, 20)}...' : _item.name},
-                    {'title': 'Proveedor', 'value': _item.vendor.length > 20 ? '${_item.vendor.substring(0, 20)}...' : _item.vendor},
-                    {'title': 'Descripción', 'value': _item.description.length  > 20 ? '${_item.description.substring(0, 20)}...' : _item.description},
-                  ]),
-                  const SizedBox(width: 10),
-                  _buildCombinedDetailCard([
-                    {'title': 'Color', 'value': _item.color},
-                    {'title': 'Tamaño', 'value': _item.size ?? 'N/D'},
-                    {'title': 'Cantidad', 'value': _item.quantity.toString()},
-                  ]),
-                ],
+              Card(
+                elevation: 6,
+                margin: const EdgeInsets.all(8.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.rosa.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildCombinedDetailCard([
+                            {
+                              'title': 'Nombre',
+                              'value': _item.name.length > 20
+                                  ? '${_item.name.substring(0, 20)}...'
+                                  : _item.name
+                            },
+                            {
+                              'title': 'Proveedor',
+                              'value': _item.vendor.length > 20
+                                  ? '${_item.vendor.substring(0, 20)}...'
+                                  : _item.vendor
+                            },
+                            {
+                              'title': 'Descripción',
+                              'value': _item.description.length > 20
+                                  ? '${_item.description.substring(0, 20)}...'
+                                  : _item.description
+                            },
+                          ]),
+                          const SizedBox(width: 10),
+                          _buildCombinedDetailCard([
+                            {'title': 'Color', 'value': _item.color},
+                            {'title': 'Tamaño', 'value': _item.size ?? 'N/D'},
+                            {'title': 'Cantidad', 'value': _item.quantity.toString()},
+                          ]),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildItemsQuantitySoldByClient(_item),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
-              _buildItemsQuantitySoldByClient(_item),
               const SizedBox(height: 20),
               /*Container(
                 height: 200,
@@ -329,43 +362,45 @@ class ItemDetailScreen extends StatefulWidget {
     }
 
     Widget _buildCombinedDetailCard(List<Map<String, String>> details) {
-      return Card(
-        elevation: 5,
-        margin: const EdgeInsets.symmetric(vertical: 8.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: details.map((detail) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      detail['title']!,
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.pink,
+      return Expanded(
+        child: Card(
+          elevation: 5,
+          margin: const EdgeInsets.all(16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: details.map((detail) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        detail['title']!,
+                        style: GoogleFonts.lato(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.pink,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      detail['value']!,
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                      const SizedBox(height: 5),
+                      Text(
+                        detail['value']!,
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       );
